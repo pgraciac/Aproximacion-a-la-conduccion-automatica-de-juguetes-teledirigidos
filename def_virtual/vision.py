@@ -30,35 +30,6 @@ def capturar_imagen(cap):
     else:
         print("Error capturing image")
 
-# def mark_regions(window_name, rois):
-#     global marked_regions
-#     marked_regions = True
-#     regions = tk.Tk()
-#     regions.title("Regions marked yet?")
-    
-#     # Crear botones y asociarlos a sus funciones correspondientes
-#     btn_yes = tk.Button(regions, text="Finish", command=lambda: (setattr(sys.modules[__name__], 'marked_regions', False), regions.destroy()))
-
-#     # Colocar los botones en la ventana
-#     btn_yes.pack(fill=tk.BOTH, expand=True)
-
-#     def on_mouse_click(event, x, y, flags, params):
-#         global current_roi
-#         if marked_regions==True:
-#             if event == cv2.EVENT_LBUTTONDOWN:
-#                 current_roi=[]
-#                 current_roi.append((x,y))
-#             elif event == cv2.EVENT_LBUTTONUP:
-#                 current_roi.append((x,y))
-#                 rois.append(current_roi)
-#                 print(rois)
-
-#     cv2.setMouseCallback(window_name, on_mouse_click)
-
-
-# def mark_path():
-#     pass
-
 def regions_callback(event, x, y, flags, param):
     global current_roi
     global current_mark
@@ -69,7 +40,7 @@ def regions_callback(event, x, y, flags, param):
         regions.title("Regions marked yet?")
         
         # Crear botones y asociarlos a sus funciones correspondientes
-        btn_yes = tk.Button(regions, text="Finish", command=lambda: (setattr(sys.modules[__name__], 'current_mark', "none"), setattr(sys.modules[__name__], 'marking', False) ,regions.destroy()))
+        btn_yes = tk.Button(regions, text="Finish", command=lambda: (setattr(sys.modules[__name__], 'current_mark', None), setattr(sys.modules[__name__], 'marking', False) ,regions.destroy()))
 
         # Colocar los botones en la ventana
         btn_yes.pack(fill=tk.BOTH, expand=True)
@@ -101,7 +72,7 @@ def path_callback(event, x, y, flags, param):
             
     elif event == cv2.EVENT_RBUTTONDOWN:
         marking = False
-        current_mark = "none"
+        current_mark = None
 
 def main_mouse_callback(event, x, y, flags, param):
     if current_mark=="regions":
@@ -114,17 +85,17 @@ def set_current_mark(mark):
     current_mark=mark
     print(current_mark)
 
-def point_in_rois(point):
+def point_in_rois():
     for roi in rois:
         if point in roi:
             return True
-        else:
-            return False
+    return False
 
 marked_regions=False
 current_roi=[]
 rois=[]
 current_point=[]
 path=[]
-current_mark="none"
+current_mark=None
 marking=False
+point=None

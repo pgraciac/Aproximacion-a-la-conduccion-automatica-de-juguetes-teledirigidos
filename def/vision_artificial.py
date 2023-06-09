@@ -1,3 +1,5 @@
+import sys
+import tkinter as tk
 import cv2
 import numpy as np
 
@@ -21,24 +23,79 @@ def detectar_amarillo(frame):
 
     return frame
 
-def capturar_imagen():
+def capturar_imagen(cap):
     ret, frame = cap.read()
     if ret:
-        frame = detectar_amarillo(frame)
-        cv2.imshow("Deteccion de amarillo", frame)
+        return frame    
+    else:
+        print("Error capturing image")
 
+def regions_callback(event, x, y, flags, param):
+    global current_roi
+    global current_mark
+    global rois
+    global marking
+    if marking==False:
+        regions = tk.Tk()
+        regions.title("Regions marked yet?")
+        
+        # Crear botones y asociarlos a sus funciones correspondientes
+        btn_yes = tk.Button(regions, text="Finish", command=lambda: (setattr(sys.modules[__name__], 'current_mark', None), setattr(sys.modules[__name__], 'marking', False) ,regions.destroy()))
 
-if __name__ == '__main__':
-    cap = cv2.VideoCapture(0)
-    cv2.namedWindow("Deteccion de amarillo")
+        # Colocar los botones en la ventana
+        btn_yes.pack(fill=tk.BOTH, expand=True)
+    marking = True
+    if event == cv2.EVENT_LBUTTONDOWN:
+        current_roi=[]
+        current_roi.append((x,y))
+    elif event == cv2.EVENT_LBUTTONUP:
+        (x_initial, y_initial) = current_roi[0]
+        x_min, x_max = min(x_initial, x), max(x_initial, x)
+        y_min, y_max = min(y_initial, y), max(y_initial, y)
+        current_roi = [(xi, yi) for xi in range(x_min, x_max+1) for yi in range(y_min, y_max+1)]
+        print("current roi:", current_roi)
+        rois.append(current_roi)
+        print(rois)
 
-    while True:
-        key = cv2.waitKey(1) & 0xFF
+def path_callback(event, x, y, flags, param):
+    global current_mark, current_point, path, marking
+                
+    if event == cv2.EVENT_LBUTTONDOWN:
+        marking = True
+        path.append((x,y))
+        print(path)
 
-        if key == ord("r"):
-            capturar_imagen()
-        elif key == ord("q"):
-            break
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if marking:
+            path.append((x,y))
+            print(path)
+            
+    elif event == cv2.EVENT_RBUTTONDOWN:
+        marking = False
+        current_mark = None
 
-    cap.release()
-    cv2.destroyAllWindows()
+def main_mouse_callback(event, x, y, flags, param):
+    if current_mark=="regions":
+        regions_callback(event, x, y, flags, param)
+    elif current_mark=="path":
+        path_callback(event, x, y, flags, param)
+
+def set_current_mark(mark):
+    global current_mark
+    current_mark=mark
+    print(current_mark)
+
+def point_in_rois():
+    for roi in rois:
+        if point in roi:
+            return True
+    return False
+
+marked_regions=False
+current_roi=[]
+rois=[]
+current_point=[]
+path=[]
+current_mark=None
+marking=False
+point=None
