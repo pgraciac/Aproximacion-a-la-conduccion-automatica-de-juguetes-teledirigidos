@@ -3,23 +3,35 @@ import tkinter as tk
 import cv2
 import numpy as np
 
-def detectar_amarillo(frame):
+def detectar_verde(frame):
+    global point
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower_yellow = np.array([20, 150, 100])
-    upper_yellow = np.array([30, 255, 255])
-    mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+    lower_green = np.array([35, 50, 50])
+    upper_green = np.array([85, 255, 255])
+    mask = cv2.inRange(hsv, lower_green, upper_green)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Variables para calcular el promedio de los centroides
+    sum_cX = 0
+    sum_cY = 0
+    count = 0
 
     for contour in contours:
         area = cv2.contourArea(contour)
         if area < 100:
             continue
         M = cv2.moments(contour)
-        cX = int(M["m10"] / M["m00"])
-        cY = int(M["m01"] / M["m00"])
-        cv2.circle(frame, (cX, cY), 5, (0, 0, 255), -1)
-        cv2.putText(frame, f"({cX}, {cY})", (cX - 50, cY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-        #print(f"Coordenadas del centroide amarillo: ({cX}, {cY})")
+        sum_cX += int(M["m10"] / M["m00"])
+        sum_cY += int(M["m01"] / M["m00"])
+        count += 1
+
+    # Si se encontraron contornos, calcular el promedio de los centroides
+    if count > 0:
+        avg_cX = sum_cX // count
+        avg_cY = sum_cY // count
+        point = (avg_cX, avg_cY)
+        cv2.circle(frame, (avg_cX, avg_cY), 5, (0, 0, 255), -1)
+        cv2.putText(frame, f"({avg_cX}, {avg_cY})", (avg_cX - 50, avg_cY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
     return frame
 

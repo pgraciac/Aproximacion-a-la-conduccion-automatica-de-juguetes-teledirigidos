@@ -5,4 +5,4 @@ button = digitalio.DigitalInOut(board.C0)
 button.direction = digitalio.Direction.OUTPUT
 
 while True:
-    button.value == False
+    button.value == True
