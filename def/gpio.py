@@ -1,6 +1,7 @@
 import time
 import board
 import digitalio
+from vision import angles, get_point
 
 left_button = digitalio.DigitalInOut(board.C0)
 left_button.direction = digitalio.Direction.OUTPUT
@@ -20,6 +21,8 @@ down_button.value = True
 
 
 def move(direction, distance=0.1):
+    init_point = get_point()
+    print(f'init: {init_point}')
     print(f"Moving {direction} for {distance} seconds")
     if direction == "left":
         left_button.value = False
@@ -61,3 +64,10 @@ def move(direction, distance=0.1):
         time.sleep(distance)
         down_button.value = True
         left_button.value = True
+    # angles(init_point)
+
+def robot_orientation():
+    init_position = get_point()
+    move("up")
+    time.sleep(0.5)
+    final_position = get_point()

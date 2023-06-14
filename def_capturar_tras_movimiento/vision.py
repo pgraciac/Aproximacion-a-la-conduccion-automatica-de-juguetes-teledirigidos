@@ -4,6 +4,8 @@ import tkinter as tk
 import cv2
 import numpy as np
 import math
+import gpio
+from KeyListener import KeyListener
 
 
 def set_color_range(event, x, y, flags, param):
@@ -24,8 +26,8 @@ def set_color_range(event, x, y, flags, param):
         print("Upper Green HSV:", upper_green)
 
 
-def detectar_verde(frame):
-    global point, lower_green, upper_green
+def set_point_in_frame():
+    global point, lower_green, upper_green, frame
     if lower_green is None or upper_green is None:
         return frame
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -52,11 +54,10 @@ def detectar_verde(frame):
         avg_cY = sum_cY // count
         point = (avg_cX, avg_cY)
 
-def capturar_imagen(cap):
+def capturar_imagen():
+    global frame, cap
     ret, frame = cap.read()
-    if ret:
-        return frame    
-    else:
+    if not ret:
         print("Error capturing image")
 
 def regions_callback(event, x, y, flags, param):
@@ -85,6 +86,7 @@ def regions_callback(event, x, y, flags, param):
         print("current roi:", current_roi)
         rois.append(current_roi)
         print(rois)
+        update_frame()
 
 def path_callback(event, x, y, flags, param):
     global current_mark, path, marking
@@ -98,6 +100,7 @@ def path_callback(event, x, y, flags, param):
         if marking:
             path.append((x,y))
             print(path)
+            update_frame()
             
     elif event == cv2.EVENT_RBUTTONDOWN:
         marking = False
@@ -110,6 +113,7 @@ def point_callback(event, x, y, flags, param):
         target_point = (x, y)
         print(target_point)
         current_mark = None
+        update_frame()
 
 def main_mouse_callback(event, x, y, flags, param):
     if current_mark=="regions":
@@ -125,14 +129,47 @@ def set_current_mark(mark):
     current_mark=mark
     print(current_mark)
 
-def get_point():
-    return point
+
+def get_frame():
+    global frame
+    return frame
 
 def point_in_rois():
     for roi in rois:
         if point in roi:
             return True
     return False
+
+def mostrar_frame():
+    global point 
+    capturar_imagen()
+    set_point_in_frame()
+    update_frame()
+    print(point)
+    
+
+def update_frame():
+    global frame, point, target_point, rois, path, window_name
+
+    if point is not None:
+        cv2.circle(frame, point, 5, (0, 0, 255), -1)
+        cv2.putText(frame, f"{point}", (point[0] - 50, point[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+    if target_point is not None:
+        cv2.circle(frame, target_point, 5, (0, 0, 255), -1)
+        cv2.putText(frame, f"{target_point}", (target_point[0] - 50, target_point[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+
+    for i in range(1, len(path)):
+        cv2.line(frame, path[i - 1], path[i], (0, 255, 0), 2)
+
+    for region in rois:
+        cv2.rectangle(frame, region[0], region[-1],(0,0,0),2)
+
+    if point_in_rois():
+        cv2.putText(frame, "WARNING: POINT IS IN A INVALID PLACE", (140, 30), cv2.FONT_HERSHEY_TRIPLEX, 1, (0, 0, 255), 1)
+
+    cv2.imshow(window_name, frame)
+
 
 def angles(initial_position):
     global point, target_point
@@ -162,6 +199,44 @@ def angles(initial_position):
     error_angle = (error_angle + math.pi) % (2 * math.pi) - math.pi
     print(f'error angle normalized: {error_angle}')
 
+def init_vision():
+    global cap, window_name, root, listener
+    cv2.namedWindow(window_name)
+    
+    root.title("Menú")
+    listener.start()
+    
+
+    btn_marcar_regiones = tk.Button(root, text="Marcar regiones", command=lambda: set_current_mark("regions"))
+    btn_dibujar_trayectoria = tk.Button(root, text="Dibujar trayectoria", command=lambda: set_current_mark("path"))
+    btn_marcar_meta = tk.Button(root, text="Marcar meta", command=lambda: set_current_mark("target_point"))
+    btn_llegar_meta = tk.Button(root, text="Llegar a meta", command=lambda: gpio.move_to_target())
+
+    btn_marcar_regiones.pack(fill=tk.BOTH, expand=True)
+    btn_dibujar_trayectoria.pack(fill=tk.BOTH, expand=True)
+    btn_marcar_meta.pack(fill=tk.BOTH, expand=True)
+    btn_llegar_meta.pack(fill=tk.BOTH, expand=True)
+
+
+    cap.read()
+
+    time.sleep(0.5)
+    mostrar_frame()
+
+    cv2.setMouseCallback(window_name, set_color_range, param=frame)
+    print("Haz clic en el robot para seleccionar su color")
+    while lower_green is None or upper_green is None:
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    mostrar_frame()
+
+    cv2.setMouseCallback(window_name, main_mouse_callback)
+
+def finish_vision():
+    global cap
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 marked_regions=False
@@ -175,3 +250,10 @@ marking=False
 point=None
 lower_green = None
 upper_green = None
+frame = None
+root = tk.Tk()
+window_name="Detectar_robot"
+listener = KeyListener(None)
+cap = cv2.VideoCapture(1)
+
+
