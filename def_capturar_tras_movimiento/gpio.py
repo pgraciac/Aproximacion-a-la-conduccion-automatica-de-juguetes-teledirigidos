@@ -22,7 +22,7 @@ down_button.direction = digitalio.Direction.OUTPUT
 down_button.value = True
 
 
-def move(direction, distance=0.1):
+def move(direction, distance):
     print(f"Moving {direction} for {distance} seconds")
     if direction == "left":
         left_button.value = False
@@ -62,6 +62,8 @@ def move(direction, distance=0.1):
 #     final_position = get_point()
 
 def move_to_target(threshold=50, kp=0.1, kd=0.1):
+    global actual_orientation, avg_distance, avg_rotation
+
     if not vision.listener.running():
         return
     if vision.target_point is None:
@@ -75,22 +77,22 @@ def move_to_target(threshold=50, kp=0.1, kd=0.1):
     initial_position = vision.point
 
     # Move the robot slightly forward to get the second point
-    move("up", 0.2)
-    vision.mostrar_frame()
-    vision.root.update()
+    # move("up", 0.2)
+    # vision.mostrar_frame()
+    # vision.root.update()
     # Get the position after moving
-    print("next: ", vision.point)
-    next_position = vision.point
+    # print("next: ", vision.point)
+    # next_position = vision.point
 
     # Calculate the robot's orientation
-    delta_x_robot = next_position[0] - initial_position[0]
-    delta_y_robot = next_position[1] - initial_position[1]
-    robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
-    robot_orientation = math.degrees(robot_orientation)
-    print(f"robot orientation: {robot_orientation}")
+    # delta_x_robot = next_position[0] - initial_position[0]
+    # delta_y_robot = next_position[1] - initial_position[1]
+    # robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
+    # robot_orientation = math.degrees(robot_orientation)
+    print(f"robot orientation: {actual_orientation}")
     # Calculate the distance to the target
-    delta_x_point = vision.target_point[0] - next_position[0]
-    delta_y_point = vision.target_point[1] - next_position[1]
+    delta_x_point = vision.target_point[0] - initial_position[0]
+    delta_y_point = vision.target_point[1] - initial_position[1]
     distance = math.sqrt(delta_x_point ** 2 + delta_y_point ** 2)
 
     # Check if the target is reached
@@ -103,7 +105,7 @@ def move_to_target(threshold=50, kp=0.1, kd=0.1):
     angle_to_target = math.degrees(angle_to_target)
     print(f"angle to target: {angle_to_target}")
     # Calculate the angular error
-    error_angle = angle_to_target - robot_orientation
+    error_angle = angle_to_target - actual_orientation
 
     # Normalize the error_angle to be between -pi and pi
     error_angle = (error_angle + 180) % 360 - 180
@@ -111,28 +113,52 @@ def move_to_target(threshold=50, kp=0.1, kd=0.1):
     # Decide on the robot's movement based on error_angle
     #keyboard.wait('space')
     rotate_duration = abs(error_angle / avg_rotation) * 0.1  # Scale with the avg rotation
+    if rotate_duration < 0.1:
+        rotate_duration = 0.1
     # if error_angle < 30:
     #     # Move forward if the error is small
-    #     move_duration = abs(distance / avg_distance) * 0.1  # Scale with the avg distance
-    #     move("up", move_duration)
-    if error_angle > 0 and error_angle < 90:
+    move_duration = abs(distance / avg_distance) * 0.1  # Scale with the avg distance
+    if move_duration < 0.1:
+        move_duration = 0.1
+
+    if error_angle < 30 and error_angle > -30:
+        #Move forward if the error is small
+        move("up", 0.2)
+    elif error_angle > 0 and error_angle < 90:
         # Turn left if the target is to the left
+        print("have to move up-left")
         move("up-left", rotate_duration)
-    elif error_angle < 0 and error_angle < -90:
+    elif error_angle < 0 and error_angle > -90:
         # Turn left if the target is to the left
+        print("have to move up-rigth")
         move("up-right", rotate_duration)
     elif error_angle > 90:
         # Turn left if the target is to the left
-        move("left", rotate_duration)
+        print("have to move left")
+        move("left", 0.1)
+        move("up", 0.1)
     elif error_angle < -90:
         # Turn left if the target is to the left
-        move("right", rotate_duration)
+        print("have to move right")
+        move("right", 0.1)
+        move("up", 0.1)
+    vision.mostrar_frame()
+    vision.root.update()
+    final_position= vision.point
+    print("final: ", final_position)
+    # Calculate the robot's orientation
+    delta_x_robot = final_position[0] - initial_position[0]
+    delta_y_robot = final_position[1] - initial_position[1]
+    robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
+    actual_orientation = math.degrees(robot_orientation)
+    print("actual orientation after move: ", actual_orientation)
+    #time.sleep(4)
 
     print("------------------------------------------------")
     # Call this function again to keep moving
     vision.root.after(100, lambda: move_to_target())
 
-def calibrate_distance(tm=0.1):
+def calibrate_distance(tm=0.2):
     # Get initial position
     print("Calibrating distance")
     initial_position = vision.point
@@ -153,7 +179,8 @@ def calibrate_distance(tm=0.1):
     print(f"Distance moved in {tm} seconds: {distance} units")
     return distance
 
-def calibrate_rotation(tm=0.1, direction="up-right"):
+def calibrate_rotation(tm=0.2, direction="up-right"):
+    global actual_orientation
     print("Calibrate rotation")
     # Move robot forward to establish initial orientation
     initial_position = vision.point
@@ -186,13 +213,15 @@ def calibrate_rotation(tm=0.1, direction="up-right"):
     delta_y_final = final_position[1] - initial_position[1]
     final_angle = math.atan2(delta_y_final, delta_x_final)
     final_angle = math.degrees(final_angle)
+    actual_orientation = final_angle
+    print("actual orientation after calibrating: ", actual_orientation)
 
     # Calculate and print rotation
     rotation = final_angle - initial_angle
     print(f"Rotation in {tm} seconds: {rotation} degrees")
     return rotation
 
-def perform_calibration(repetitions=1, tm=0.1):
+def perform_calibration(repetitions=1, tm=0.2):
     global avg_distance, avg_rotation
     total_distance = 0
     total_rotation = 0

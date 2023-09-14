@@ -2,7 +2,6 @@ import os
 import vision
 
 
-
 # def update_point(cap, window_name, listener):
 #     global frame
 #     if listener.running():
