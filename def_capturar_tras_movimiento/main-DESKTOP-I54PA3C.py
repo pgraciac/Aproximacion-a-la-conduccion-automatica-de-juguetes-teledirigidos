@@ -12,7 +12,7 @@ import vision
 
 
 if __name__ == '__main__':
-    #os.environ['BLINKA_FT232H'] = '1'
+    os.environ['BLINKA_FT232H'] = '1'
     
 
     warning = False

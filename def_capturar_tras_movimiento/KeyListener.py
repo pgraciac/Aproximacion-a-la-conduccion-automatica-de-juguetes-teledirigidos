@@ -40,7 +40,7 @@ class KeyListener:
                     vision.point =gpio.move("right", elapsed_time)
                 elif key == keyboard.Key.down:
                     vision.point =gpio.move("down", elapsed_time)
-
+            vision.mostrar_frame()
             self.start_time = None
         
         if key in self.keys_pressed:

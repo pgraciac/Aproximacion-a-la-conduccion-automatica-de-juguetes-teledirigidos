@@ -24,13 +24,15 @@ def set_color_range(event, x, y, flags, param):
         print("Color seleccionado:", color_rgb)
         print("Lower Green HSV:", lower_green)
         print("Upper Green HSV:", upper_green)
+        mostrar_frame()
 
 
 def set_point_in_frame():
     global point, lower_green, upper_green, frame
+    copy_frame = correct_illumination(frame)
     if lower_green is None or upper_green is None:
-        return frame
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        return
+    hsv = cv2.cvtColor(copy_frame, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_green, upper_green)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -53,6 +55,27 @@ def set_point_in_frame():
         avg_cX = sum_cX // count
         avg_cY = sum_cY // count
         point = (avg_cX, avg_cY)
+
+
+def correct_illumination(frame):
+    # Convert the image to the HSV color space
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    
+    # Apply Gaussian Blur
+    hsv = cv2.GaussianBlur(hsv, (15, 15), 0)
+    
+    # Split the channels
+    h, s, v = cv2.split(hsv)
+    
+    # Apply histogram equalization on the V channel
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    v = clahe.apply(v)
+    
+    # Merge the channels back
+    hsv = cv2.merge([h, s, v])
+    
+    # Convert the image back to the BGR color space
+    return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
 def capturar_imagen():
     global frame, cap
@@ -141,12 +164,11 @@ def point_in_rois():
     return False
 
 def mostrar_frame():
-    global point 
+    global point, root
     capturar_imagen()
     set_point_in_frame()
     update_frame()
-    print(point)
-    
+   
 
 def update_frame():
     global frame, point, target_point, rois, path, window_name
@@ -170,34 +192,6 @@ def update_frame():
 
     cv2.imshow(window_name, frame)
 
-
-def angles(initial_position):
-    global point, target_point
-
-    # Get the position after moving
-    time.sleep(0.5)
-    next_position = point
-
-    # Calculate the robot's orientation
-    delta_x_orientation = next_position[0] - initial_position[0]
-    delta_y_orientation = next_position[1] - initial_position[1]
-    robot_orientation = math.atan2(delta_y_orientation, delta_x_orientation)
-    robot_orientation = math.degrees(robot_orientation)
-    # Calculate the distance to the target
-    delta_x = target_point[0] - next_position[0]
-    delta_y = target_point[1] - next_position[1]
-    distance = math.sqrt(delta_x ** 2 + delta_y ** 2)
-
-    # Calculate the angle to the target
-    angle_to_target = math.atan2(delta_y, delta_x)
-    angle_to_target = math.degrees(angle_to_target)
-    print(f'robot orientation: {robot_orientation}, distance to target: {distance}, angle to target: {angle_to_target}')
-    # Calculate the angular error
-    error_angle = angle_to_target - robot_orientation
-    print(f'error angle not normalized: {error_angle}')
-    # Normalize the error_angle to be between -pi and pi
-    error_angle = (error_angle + math.pi) % (2 * math.pi) - math.pi
-    print(f'error angle normalized: {error_angle}')
 
 def init_vision():
     global cap, window_name, root, listener
@@ -225,13 +219,16 @@ def init_vision():
 
     cv2.setMouseCallback(window_name, set_color_range, param=frame)
     print("Haz clic en el robot para seleccionar su color")
-    while lower_green is None or upper_green is None:
+    while lower_green is None or upper_green is None or point is None:
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     mostrar_frame()
 
     cv2.setMouseCallback(window_name, main_mouse_callback)
+    print("Calibrating...")
+    gpio.perform_calibration()
+    print("Finish Calibrating")
 
 def finish_vision():
     global cap

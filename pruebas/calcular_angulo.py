@@ -13,8 +13,8 @@ def calcular_angulo(p1, p2):
     return grados
 
 # Ejemplo de uso
-punto1 = (637, 345)
-punto2 = (700, 345)
+punto1 = (640, 550)
+punto2 = (700, 549)
 angulo = calcular_angulo(punto1, punto2)
 
 print(f"El ángulo entre los puntos es: {angulo} grados")
