@@ -138,6 +138,19 @@ def point_callback(event, x, y, flags, param):
         current_mark = None
         update_frame()
 
+def limits_callback(event, x, y, flags, param):
+    global limits, current_mark
+    if event == cv2.EVENT_LBUTTONDOWN:
+        new_point = (x, y)
+        limits.append(new_point)
+        update_frame()
+
+    elif event == cv2.EVENT_RBUTTONDOWN:
+        current_mark = None
+        limits.append(limits[0])
+        update_frame()
+
+
 def main_mouse_callback(event, x, y, flags, param):
     if current_mark=="regions":
         regions_callback(event, x, y, flags, param)
@@ -145,7 +158,8 @@ def main_mouse_callback(event, x, y, flags, param):
         path_callback(event, x, y, flags, param)
     elif current_mark=="target_point":
         point_callback(event, x, y, flags, param)
-
+    elif current_mark=="limits":
+        limits_callback(event, x, y, flags, param)
 
 def set_current_mark(mark):
     global current_mark
@@ -171,7 +185,7 @@ def mostrar_frame():
    
 
 def update_frame():
-    global frame, point, target_point, rois, path, window_name
+    global frame, point, target_point, rois, path, window_name, limits
 
     if point is not None:
         cv2.circle(frame, point, 5, (0, 0, 255), -1)
@@ -186,6 +200,9 @@ def update_frame():
 
     for region in rois:
         cv2.rectangle(frame, region[0], region[-1],(0,0,0),2)
+
+    for i in range(1, len(limits)):
+        cv2.line(frame, limits[i - 1], limits[i], (0, 0, 0), 2)
 
     if point_in_rois():
         cv2.putText(frame, "WARNING: POINT IS IN A INVALID PLACE", (140, 30), cv2.FONT_HERSHEY_TRIPLEX, 1, (0, 0, 255), 1)
@@ -205,12 +222,17 @@ def init_vision():
     btn_dibujar_trayectoria = tk.Button(root, text="Dibujar trayectoria", command=lambda: set_current_mark("path"))
     btn_marcar_meta = tk.Button(root, text="Marcar meta", command=lambda: set_current_mark("target_point"))
     btn_llegar_meta = tk.Button(root, text="Llegar a meta", command=lambda: gpio.move_to_target())
+    # btn_marcar_robot = tk.Button(root, text="Marcar robot", command=lambda: set_color_range(frame))
+    btn_calibrate_spin = tk.Button(root, text="Calibrar giro", command=lambda: gpio.calibrate_spin())
+    btn_marcar_limites = tk.Button(root, text="Marcar limites", command=lambda: set_current_mark("limits"))
 
     btn_marcar_regiones.pack(fill=tk.BOTH, expand=True)
     btn_dibujar_trayectoria.pack(fill=tk.BOTH, expand=True)
     btn_marcar_meta.pack(fill=tk.BOTH, expand=True)
     btn_llegar_meta.pack(fill=tk.BOTH, expand=True)
-
+    btn_calibrate_spin.pack(fill=tk.BOTH, expand=True)
+    # btn_marcar_robot.pack(fill=tk.BOTH, expand=True)
+    btn_marcar_limites.pack(fill=tk.BOTH, expand=True)
 
     cap.read()
 
@@ -227,7 +249,7 @@ def init_vision():
 
     cv2.setMouseCallback(window_name, main_mouse_callback)
     print("Calibrating...")
-    gpio.perform_calibration()
+    gpio.calibrate_distance()
     print("Finish Calibrating")
 
 def finish_vision():
@@ -241,6 +263,7 @@ current_roi=[]
 rois=[]
 current_point=[]
 path=[]
+limits=[]
 target_point = None
 current_mark=None
 marking=False
