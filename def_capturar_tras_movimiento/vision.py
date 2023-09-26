@@ -6,6 +6,7 @@ import numpy as np
 import math
 import gpio
 from KeyListener import KeyListener
+from queue import Queue
 
 
 def set_color_range(event, x, y, flags, param):
@@ -182,7 +183,6 @@ def mostrar_frame():
     capturar_imagen()
     set_point_in_frame()
     update_frame()
-   
 
 def update_frame():
     global frame, point, target_point, rois, path, window_name, limits
@@ -209,6 +209,23 @@ def update_frame():
 
     cv2.imshow(window_name, frame)
 
+def robot_in_limits():
+    global point, limits
+    x, y = point
+    odd_nodes = False
+    polygon = limits
+    j = len(polygon) - 1  # Último punto del polígono
+    
+    for i in range(len(polygon)):
+        xi, yi = polygon[i]
+        xj, yj = polygon[j]
+        
+        if yi < y and yj >= y or yj < y and yi >= y:
+            if xi + (y - yi) / (yj - yi) * (xj - xi) < x:
+                odd_nodes = not odd_nodes
+        j = i
+
+    return odd_nodes
 
 def init_vision():
     global cap, window_name, root, listener
@@ -223,7 +240,7 @@ def init_vision():
     btn_marcar_meta = tk.Button(root, text="Marcar meta", command=lambda: set_current_mark("target_point"))
     btn_llegar_meta = tk.Button(root, text="Llegar a meta", command=lambda: gpio.move_to_target())
     # btn_marcar_robot = tk.Button(root, text="Marcar robot", command=lambda: set_color_range(frame))
-    btn_calibrate_spin = tk.Button(root, text="Calibrar giro", command=lambda: gpio.calibrate_spin())
+    btn_calibrate_spin = tk.Button(root, text="Calibrar giro", command=lambda: gpio.calibrate_rotation())
     btn_marcar_limites = tk.Button(root, text="Marcar limites", command=lambda: set_current_mark("limits"))
 
     btn_marcar_regiones.pack(fill=tk.BOTH, expand=True)
@@ -233,7 +250,6 @@ def init_vision():
     btn_calibrate_spin.pack(fill=tk.BOTH, expand=True)
     # btn_marcar_robot.pack(fill=tk.BOTH, expand=True)
     btn_marcar_limites.pack(fill=tk.BOTH, expand=True)
-
     cap.read()
 
     time.sleep(0.5)
@@ -249,6 +265,7 @@ def init_vision():
 
     cv2.setMouseCallback(window_name, main_mouse_callback)
     print("Calibrating...")
+    time.sleep(1)
     gpio.calibrate_distance()
     print("Finish Calibrating")
 
@@ -275,5 +292,5 @@ root = tk.Tk()
 window_name="Detectar_robot"
 listener = KeyListener(None)
 cap = cv2.VideoCapture(1)
-
+events_queue = Queue()
 

@@ -1,5 +1,7 @@
 import os
 import vision
+from queue import Queue
+
 
 
 # def update_point(cap, window_name, listener):
@@ -15,6 +17,7 @@ if __name__ == '__main__':
     
 
     warning = False
+    events_queue = Queue()
     vision.init_vision()
     # update_point(cap, window_name, listener)
     while vision.listener.running():

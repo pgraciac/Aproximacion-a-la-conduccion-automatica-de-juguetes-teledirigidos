@@ -23,8 +23,11 @@ down_button.direction = digitalio.Direction.OUTPUT
 down_button.value = True
 
 
-def move(direction, distance):
+def move(direction, distance, mec="auto"):
+    global actual_orientation
     print(f"Moving {direction} for {distance} seconds")
+    initial_position = vision.point
+    print("Initial position: ", initial_position)
     if direction == "left":
         left_button.value = False
     elif direction == "up":
@@ -53,7 +56,26 @@ def move(direction, distance):
     down_button.value = True
 
     time.sleep(1)
-    # vision.mostrar_frame()
+    if mec == "auto":
+        vision.mostrar_frame()
+        vision.root.update()
+        final_position = vision.point
+        print("Final position: ", final_position)
+        
+        if direction == "up":
+            delta_x_robot = final_position[0] - initial_position[0]
+            delta_y_robot = final_position[1] - initial_position[1]
+            robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
+            actual_orientation = math.degrees(robot_orientation)
+            print("actual orientation after up: ", actual_orientation)
+        elif direction == "down":
+            delta_x_robot = final_position[0] - initial_position[0]
+            delta_y_robot = final_position[1] - initial_position[1]
+            robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
+            actual_orientation = (math.degrees(robot_orientation) + 180) % 360
+            print("actual orientation after down: ", actual_orientation)
+            actual_orientation += 10
+    # #vision.mostrar_frame()
     # angles(init_point)
 
 # def robot_orientation():
@@ -61,6 +83,12 @@ def move(direction, distance):
 #     move("up")
 #     time.sleep(0.5)
 #     final_position = get_point()
+
+def distance_to_target():
+    delta_x_point = vision.target_point[0] - vision.point[0]
+    delta_y_point = vision.target_point[1] - vision.point[1]
+    distance = math.sqrt(delta_x_point ** 2 + delta_y_point ** 2)
+    return distance
 
 def move_to_target(threshold=50, kp=0.1, kd=0.1):
     global distance_second, actual_orientation, avg_distance, avg_rotation, spin_right_second, spin_up_right_secon
@@ -74,27 +102,14 @@ def move_to_target(threshold=50, kp=0.1, kd=0.1):
         print("Error: point is None")
         return
     # Get the initial position
-    print("initial: ", vision.point)
+    # print("initial: ", vision.point)
     initial_position = vision.point
 
-    # Move the robot slightly forward to get the second point
-    # move("up", 0.2)
-    # vision.mostrar_frame()
-    # vision.root.update()
-    # Get the position after moving
-    # print("next: ", vision.point)
-    # next_position = vision.point
-
-    # Calculate the robot's orientation
-    # delta_x_robot = next_position[0] - initial_position[0]
-    # delta_y_robot = next_position[1] - initial_position[1]
-    # robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
-    # robot_orientation = math.degrees(robot_orientation)
-    print(f"robot orientation: {actual_orientation}")
+    print(f"actual orientation: {actual_orientation}")
     # Calculate the distance to the target
     delta_x_point = vision.target_point[0] - initial_position[0]
     delta_y_point = vision.target_point[1] - initial_position[1]
-    distance = math.sqrt(delta_x_point ** 2 + delta_y_point ** 2)
+    distance = distance_to_target()
 
     # Check if the target is reached
     if distance < threshold:
@@ -112,64 +127,136 @@ def move_to_target(threshold=50, kp=0.1, kd=0.1):
     error_angle = (error_angle + 180) % 360 - 180
     print("error angle:", error_angle)
     # Decide on the robot's movement based on error_angle
-    #keyboard.wait('space')
-    # rotate_duration = abs(error_angle / avg_rotation) * 0.1  # Scale with the avg rotation
-    # if rotate_duration < 0.1:
-    #     rotate_duration = 0.1
-    # # if error_angle < 30:
-    # #     # Move forward if the error is small
-    # move_duration = abs(distance / avg_distance) * 0.1  # Scale with the avg distance
-    # if move_duration < 0.1:
-    #     move_duration = 0.1
-
 
     if error_angle < 30 and error_angle > -30:
         #Move forward if the error is small
-        move_duration = (0.1 * distance) / distance_second
+        move_duration = (0.1 * distance_to_target()) / distance_second
+        if move_duration > 0.3:
+            move_duration = 0.3
         move("up", move_duration)
-    elif error_angle > 0 and error_angle < 120:
+    elif error_angle > 0:
         # Turn left if the target is to the left
         rotate_duration = abs(error_angle) / spin_up_right_secon * 0.1
         print("have to move up-left")
         move("up-left", rotate_duration)
-    elif error_angle < 0 and error_angle > -120:
+        #vision.mostrar_frame()
+        #vision.root.update()
+        move("up", 0.2)
+    elif error_angle < 0:
         rotate_duration = abs(error_angle) / spin_up_right_secon * 0.1
         # Turn left if the target is to the left
         print("have to move up-rigth")
         move("up-right", rotate_duration)
-    elif error_angle > 120:
-        rotate_duration = abs(error_angle) / spin_right_second * 0.1
-        # Turn left if the target is to the left
-        print("have to move left")
-        rotate_duration = abs(error_angle) / spin_right_second * 0.1
-        move("left", 0.1)
-        move("up", 0.1)
-    elif error_angle < -120:
-        # Turn left if the target is to the left
-        print("have to move right")
-        move("right", 0.1)
-        move("up", 0.1)
-    vision.mostrar_frame()
-    vision.root.update()
+        #vision.mostrar_frame()
+        #vision.root.update()
+        move("up", 0.2)
+    # elif error_angle > 120:
+    #     rotate_duration = abs(error_angle) / spin_right_second * 0.1
+    #     # Turn left if the target is to the left
+    #     print("have to move left")
+    #     rotate_duration = abs(error_angle) / spin_right_second * 0.1
+    #     move("left", 0.1)
+    #     #vision.mostrar_frame()
+    #     #vision.root.update()
+    #     move("up", 0.2)
+    # elif error_angle < -120:
+    #     # Turn left if the target is to the left
+    #     print("have to move right")
+    #     move("right", 0.1)
+    #     #vision.mostrar_frame()
+    #     #vision.root.update()
+    #     move("up", 0.2)
+
+    #vision.mostrar_frame()
+    #vision.root.update()
     final_position= vision.point
     print("final: ", final_position)
     # Calculate the robot's orientation
-    delta_x_robot = final_position[0] - initial_position[0]
-    delta_y_robot = final_position[1] - initial_position[1]
-    robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
-    actual_orientation = math.degrees(robot_orientation)
     print("actual orientation after move: ", actual_orientation)
     #time.sleep(4)
 
     print("------------------------------------------------")
     # Call this function again to keep moving
     vision.root.after(100, lambda: move_to_target())
+    
+def go_robot_inside_limits():
+    while not vision.robot_in_limits:
+        best_distance = float('inf')
+        best_vertex = ()
+        for vertex in vision.limits:
+            distance = math.sqrt((abs(vision.point[0] - vertex[0])) ** 2 + (abs(vision.point[1] - vertex[1])) ** 2)
+            if distance < best_distance:
+                best_distance = distance
+                best_vertex = vertex
+        distance = float('inf')
+        best_point = ()
+        for _ in range(2):
+            add = -1
+            A, B = (best_vertex, vision.limits[vision.limits.index(best_vertex) + add])
+            add += 2
+            p = best_vertex
+            AP = (p[0]-A[0], p[1]-A[1])
+            AB = (B[0]-A[0], B[1]-A[1])
+            ab2 = AB[0]**2 + AB[1]**2
+            ap_ab = AP[0]*AB[0] + AP[1]*AB[1]
+            t = ap_ab / ab2
 
-import math
-import time
+            if t < 0:
+                t = 0
+            elif t > 1:
+                t = 1
+
+            point_in_line = (A[0] + AB[0] * t, A[1] + AB[1] * t)
+            distance = math.sqrt((abs(point_in_line[0] - best_vertex[0])) ** 2 + (abs(point_in_line[1] - best_vertex[1])) ** 2)
+            if distance < best_distance:
+                best_distance = distance
+                best_point = point_in_line
+
+        angle_to_polygon = math.atan2((abs(best_point[0] - vision.point[0])) ** 2 + (abs(best_point[1] - vision.point[1])) ** 2)
+        angle_to_polygon = math.degrees(angle_to_polygon)
+
+        error_angle = angle_to_polygon - actual_orientation
+        initial_position = vision.point
+        if error_angle < 30 and error_angle > -30:
+            #Move forward if the error is small
+            move_duration = (0.1 * distance_to_target()) / distance_second
+            move("up", move_duration + 0.1)
+        elif error_angle > 0 and error_angle < 120:
+            # Turn left if the target is to the left
+            rotate_duration = abs(error_angle) / spin_up_right_secon * 0.1
+            print("have to move up-left")
+            move("up-left", rotate_duration)
+        elif error_angle < 0 and error_angle > -120:
+            rotate_duration = abs(error_angle) / spin_up_right_secon * 0.1
+            # Turn left if the target is to the left
+            print("have to move up-rigth")
+            move("up-right", rotate_duration)
+        elif error_angle > 120:
+            rotate_duration = abs(error_angle) / spin_right_second * 0.1
+            # Turn left if the target is to the left
+            print("have to move left")
+            rotate_duration = abs(error_angle) / spin_right_second * 0.1
+            move("left", 0.1)
+            move("up", 0.1 + 0.1)
+        elif error_angle < -120:
+            # Turn left if the target is to the left
+            print("have to move right")
+            move("right", 0.1)
+            move("up", 0.1 + 0.1)
+        #vision.mostrar_frame()
+        #vision.root.update()
+        final_position= vision.point
+        print("final: ", final_position)
+        # Calculate the robot's orientation
+        delta_x_robot = final_position[0] - initial_position[0]
+        delta_y_robot = final_position[1] - initial_position[1]
+        robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
+        actual_orientation = math.degrees(robot_orientation)
+        vision.root.after(100, lambda: move_to_target())
+
 
 def calibrate_distance():
-    global actual_orientation, distance_second
+    global distance_second
     
     total_distance = []
     
@@ -183,18 +270,18 @@ def calibrate_distance():
         
         # Obtener posición inicial
         initial_position = vision.point
-        print(f"Initial position: {initial_position}")
+        #print(f"Initial position: {initial_position}")
         
         # Mover robot por el tiempo especificado
         tm = random.uniform(0.05, 0.3)
         move(direction, tm)
-        vision.mostrar_frame()
-        vision.root.update()
+        #vision.mostrar_frame()
+        #vision.root.update()
         time.sleep(1)
         
         # Obtener posición final
         final_position = vision.point
-        print(f"Final position: {final_position}")
+        #print(f"Final position: {final_position}")
         
         # Calcular y mostrar la distancia movida
         delta_x = final_position[0] - initial_position[0]
@@ -202,11 +289,7 @@ def calibrate_distance():
         distance = math.sqrt(delta_x**2 + delta_y**2)
         print(f"Distance moved in {tm} seconds: {distance} units")
         
-        delta_x_initial = final_position[0] - initial_position[0]
-        delta_y_initial = final_position[1] - initial_position[1]
-        actual_orientation = math.atan2(delta_y_initial, delta_x_initial)
-        actual_orientation = math.degrees(actual_orientation)
-        print("Actual orientation after calibrating distance: ", actual_orientation)
+        #print("Actual orientation after calibrating distance: ", actual_orientation)
         
         # Acumular distancia y número de iteraciones
         total_distance.append((distance / tm) * 0.1)
@@ -218,47 +301,35 @@ def calibrate_distance():
     print(f"Robot moves {avg_distance_per_0_1_second} pixels in 0.1 second on average.")
     distance_second = avg_distance_per_0_1_second
 
-def calibrate_rotation(tm=0.2, direction="up-right"):
+def calibrate_rotation():
     global actual_orientation
     print("Calibrate rotation")
     # Move robot forward to establish initial orientation
     initial_position = vision.point
     print(f"Initial position: {initial_position}")    
-    move("up", tm)
-    vision.mostrar_frame()
-    vision.root.update()
-    next_position = vision.point
-    print(f"Next position: {next_position}")    
-    # Calculate initial orientation
-    delta_x_initial = next_position[0] - initial_position[0]
-    delta_y_initial = next_position[1] - initial_position[1]
-    initial_angle = math.atan2(delta_y_initial, delta_x_initial)
-    initial_angle = math.degrees(initial_angle)
 
-    # Move robot in given direction (e.g., "up-right" or "up-left") for specified time
-    move(direction, tm)
-    vision.mostrar_frame()
-    vision.root.update()
-    initial_position = vision.point
-    print(f"Initial position: {initial_position}")    
-    # Move robot forward to calculate new orientation
-    move("up", tm)
-    vision.mostrar_frame()
-    vision.root.update()
-    final_position = vision.point
-    print(f"Final position: {final_position}")    
-    # Calculate final orientation
-    delta_x_final = final_position[0] - initial_position[0]
-    delta_y_final = final_position[1] - initial_position[1]
-    final_angle = math.atan2(delta_y_final, delta_x_final)
-    final_angle = math.degrees(final_angle)
-    actual_orientation = final_angle
-    print("actual orientation after calibrating: ", actual_orientation)
-
-    # Calculate and print rotation
-    rotation = final_angle - initial_angle
-    print(f"Rotation in {tm} seconds: {rotation} degrees")
-    return rotation
+    giros = []
+    for _ in range(25):
+        initial_angle = actual_orientation
+        tm = 0.1
+        # Move robot in given direction (e.g., "up-right" or "up-left") for specified time
+        move("up-right", tm)
+        #vision.mostrar_frame()
+        #vision.root.update()
+        # Move robot forward to calculate new orientation
+        move("up", 0.2)
+        #vision.mostrar_frame()
+        #vision.root.update()
+        # Calculate final orientation
+        final_angle = actual_orientation
+        print("actual orientation after calibrating: ", actual_orientation)
+        # Calculate and print rotation
+        rotation = initial_angle - final_angle
+        print(f"Rotation in {tm} seconds: {rotation} degrees")
+        giros.append((abs(rotation) * 0.1) / tm)
+        print(f'average rotation={sum(giros) / len(giros)}')
+    average_rotation = sum(giros) / 100
+    return average_rotation
 
 def calibrate_spin():
     print("Calibrando giro")
@@ -277,13 +348,13 @@ def calibrate_spin():
         seconds = random.uniform(0.05, 0.2)
 
         move("up-right", seconds)
-        vision.mostrar_frame()
-        vision.root.update()
+        #vision.mostrar_frame()
+        #vision.root.update()
         # thr next line for up-right
         initial_position = vision.point
         move("up", 0.15)
-        vision.mostrar_frame()
-        vision.root.update()
+        #vision.mostrar_frame()
+        #vision.root.update()
 
         final_position = vision.point
         delta_x_robot = final_position[0] - initial_position[0]
@@ -312,7 +383,6 @@ def calibrate_spin():
             print(f"error: {error}")
 
         # Actualiza la orientación y posición para la siguiente iteración
-        actual_orientation = final_orientation  # Aquí ajustamos directamente la orientación.
         time.sleep(1)
     print(giro_estimado_segundo)
 
@@ -338,6 +408,6 @@ actual_orientation=0
 #spin in 0.1 seconds to right
 spin_right_second=124
 #spin in 0.1 seconds to up-right
-spin_up_right_secon = 62
+spin_up_right_secon = 30
 #pixels in 0.1 seconds
 distance_second = 0
