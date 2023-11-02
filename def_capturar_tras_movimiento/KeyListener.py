@@ -24,23 +24,23 @@ class KeyListener:
             elapsed_time = time.time() - self.start_time
             initial_position = vision.point
             if keyboard.Key.up in self.keys_pressed and keyboard.Key.right in self.keys_pressed:
-                vision.point =gpio.move("up-right", elapsed_time, "manual")
+                gpio.move("up-right", elapsed_time, "manual")
             elif keyboard.Key.up in self.keys_pressed and keyboard.Key.left in self.keys_pressed:
-                vision.point =gpio.move("up-left", elapsed_time, "manual")
+                gpio.move("up-left", elapsed_time, "manual")
             elif keyboard.Key.down in self.keys_pressed and keyboard.Key.right in self.keys_pressed:
-                vision.point =gpio.move("down-right", elapsed_time, "manual")
+                gpio.move("down-right", elapsed_time, "manual")
             elif keyboard.Key.down in self.keys_pressed and keyboard.Key.left in self.keys_pressed:
-                vision.point =gpio.move("down-left", elapsed_time, "manual")
+                gpio.move("down-left", elapsed_time, "manual")
             else:
 
                 if key == keyboard.Key.left:
-                    vision.point =gpio.move("left", elapsed_time, "manual")
+                    gpio.move("left", elapsed_time, "manual")
                 elif key == keyboard.Key.up:
-                    vision.point =gpio.move("up", elapsed_time, "manual")
+                    gpio.move("up", elapsed_time, "manual")
                 elif key == keyboard.Key.right:
-                    vision.point =gpio.move("right", elapsed_time, "manual")
+                    gpio.move("right", elapsed_time, "manual")
                 elif key == keyboard.Key.down:
-                    vision.point =gpio.move("down", elapsed_time, "manual")
+                    gpio.move("down", elapsed_time, "manual")
             vision.mostrar_frame()
             final_position = vision.point
             print("Final position: ", final_position)
@@ -49,13 +49,13 @@ class KeyListener:
                 delta_x_robot = final_position[0] - initial_position[0]
                 delta_y_robot = final_position[1] - initial_position[1]
                 robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
-                gpio.actual_orientation = math.degrees(robot_orientation)
-                print("actual orientation after up: ", gpio.actual_orientation)
+                robot_orientation = math.degrees(math.atan2(delta_y_robot, delta_x_robot))
+                gpio.actual_orientation = (robot_orientation % 360) - 360 if robot_orientation % 360 > 180 else robot_orientation % 360
             elif key == keyboard.Key.down:
-                delta_x_robot = final_position[0] - initial_position[0]
-                delta_y_robot = final_position[1] - initial_position[1]
-                robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
-                gpio.actual_orientation = (math.degrees(robot_orientation) + 180) % 360
+                delta_x_robot = initial_position[0] - final_position[0]
+                delta_y_robot = initial_position[1] - final_position[1]
+                robot_orientation = math.degrees(math.atan2(delta_y_robot, delta_x_robot))
+                gpio.actual_orientation = (robot_orientation % 360) - 360 if robot_orientation % 360 > 180 else robot_orientation % 360
                 print("actual orientation after down: ", gpio.actual_orientation)
             # vision.root.update()
             self.start_time = None

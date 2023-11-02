@@ -55,7 +55,8 @@ def set_point_in_frame():
     if count > 0:
         avg_cX = sum_cX // count
         avg_cY = sum_cY // count
-        point = (avg_cX, avg_cY)
+        point = (avg_cX, frame.shape[0]-avg_cY)
+
 
 
 def correct_illumination(frame):
@@ -101,11 +102,11 @@ def regions_callback(event, x, y, flags, param):
     
     if event == cv2.EVENT_LBUTTONDOWN:
         current_roi=[]
-        current_roi.append((x,y))
+        current_roi.append(transform_point((x,y)))
     elif event == cv2.EVENT_LBUTTONUP:
         (x_initial, y_initial) = current_roi[0]
         x_min, x_max = min(x_initial, x), max(x_initial, x)
-        y_min, y_max = min(y_initial, y), max(y_initial, y)
+        y_min, y_max = min(y_initial, frame.shape[0]-y), max(y_initial, frame.shape[0]-y)
         current_roi = [(xi, yi) for xi in range(x_min, x_max+1) for yi in range(y_min, y_max+1)]
         print("current roi:", current_roi)
         rois.append(current_roi)
@@ -117,12 +118,12 @@ def path_callback(event, x, y, flags, param):
                 
     if event == cv2.EVENT_LBUTTONDOWN:
         marking = True
-        path.append((x,y))
+        path.append(transform_point((x,y)))
         print(path)
 
     elif event == cv2.EVENT_MOUSEMOVE:
         if marking:
-            path.append((x,y))
+            path.append(transform_point((x,y)))
             print(path)
             update_frame()
             
@@ -134,7 +135,7 @@ def point_callback(event, x, y, flags, param):
     global current_mark, target_point
 
     if event == cv2.EVENT_LBUTTONDOWN:
-        target_point = (x, y)
+        target_point = transform_point((x, y))
         print(target_point)
         current_mark = None
         update_frame()
@@ -143,7 +144,7 @@ def limits_callback(event, x, y, flags, param):
     global limits, current_mark
     if event == cv2.EVENT_LBUTTONDOWN:
         new_point = (x, y)
-        limits.append(new_point)
+        limits.append(transform_point(new_point))
         update_frame()
 
     elif event == cv2.EVENT_RBUTTONDOWN:
@@ -184,32 +185,40 @@ def mostrar_frame():
     set_point_in_frame()
     update_frame()
 
+def transform_point(point):
+        return (point[0], frame.shape[0]-point[1])
+
 def update_frame():
     global frame, point, target_point, rois, path, window_name, limits
 
     if point is not None:
-        cv2.circle(frame, point, 5, (0, 0, 255), -1)
-        cv2.putText(frame, f"{point}", (point[0] - 50, point[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        cv2.circle(frame, transform_point(point), 5, (0, 0, 255), -1)
+        cv2.putText(frame, f"{point}", (transform_point(point)[0] - 50, transform_point(point)[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
     if target_point is not None:
-        cv2.circle(frame, target_point, 5, (0, 0, 255), -1)
-        cv2.putText(frame, f"{target_point}", (target_point[0] - 50, target_point[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+        cv2.circle(frame, transform_point(target_point), 5, (0, 0, 255), -1)
+        cv2.putText(frame, f"{target_point}", (transform_point(target_point)[0] - 50, transform_point(target_point)[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
+    frame_line = frame.copy()
     for i in range(1, len(path)):
-        cv2.line(frame, path[i - 1], path[i], (0, 255, 0), 2)
+        cv2.line(frame_line, transform_point(path[i - 1]), transform_point(path[i]), (0, 255, 0), 50)
+    alpha = 1
+    beta = 0.5
 
     for region in rois:
-        cv2.rectangle(frame, region[0], region[-1],(0,0,0),2)
+        cv2.rectangle(frame, transform_point(region[0]), transform_point(region[-1]),(0,0,0),2)
 
     for i in range(1, len(limits)):
-        cv2.line(frame, limits[i - 1], limits[i], (0, 0, 0), 2)
+        cv2.line(frame, transform_point(limits[i - 1]), transform_point(limits[i]), (0, 0, 0), 2)
 
     if point_in_rois():
         cv2.putText(frame, "WARNING: POINT IS IN A INVALID PLACE", (140, 30), cv2.FONT_HERSHEY_TRIPLEX, 1, (0, 0, 255), 1)
 
-    cv2.imshow(window_name, frame)
+    combined_frame = cv2.addWeighted(frame, alpha, frame_line, beta, 0.0)
+    cv2.imshow(window_name, combined_frame)
 
 def robot_in_limits():
+    print("calculating if robot is inside the limits")
     global point, limits
     x, y = point
     odd_nodes = False
@@ -224,7 +233,10 @@ def robot_in_limits():
             if xi + (y - yi) / (yj - yi) * (xj - xi) < x:
                 odd_nodes = not odd_nodes
         j = i
-
+    if odd_nodes:
+        print("Robot inside the polygon")
+    else:
+        print("Robot outside the limits ")
     return odd_nodes
 
 def init_vision():
@@ -242,6 +254,7 @@ def init_vision():
     # btn_marcar_robot = tk.Button(root, text="Marcar robot", command=lambda: set_color_range(frame))
     btn_calibrate_spin = tk.Button(root, text="Calibrar giro", command=lambda: gpio.calibrate_rotation())
     btn_marcar_limites = tk.Button(root, text="Marcar limites", command=lambda: set_current_mark("limits"))
+    btn_seguir_trayectoria = tk.Button(root, text="Seguir trayectoria", command=lambda: gpio.follow_path())
 
     btn_marcar_regiones.pack(fill=tk.BOTH, expand=True)
     btn_dibujar_trayectoria.pack(fill=tk.BOTH, expand=True)
@@ -250,6 +263,8 @@ def init_vision():
     btn_calibrate_spin.pack(fill=tk.BOTH, expand=True)
     # btn_marcar_robot.pack(fill=tk.BOTH, expand=True)
     btn_marcar_limites.pack(fill=tk.BOTH, expand=True)
+    btn_seguir_trayectoria.pack(fill=tk.BOTH, expand=True)
+
     cap.read()
 
     time.sleep(0.5)
