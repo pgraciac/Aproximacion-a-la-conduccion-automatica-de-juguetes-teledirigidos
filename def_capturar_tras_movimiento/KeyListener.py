@@ -45,18 +45,18 @@ class KeyListener:
             final_position = vision.point
             print("Final position: ", final_position)
         
-            if key == keyboard.Key.up:
-                delta_x_robot = final_position[0] - initial_position[0]
-                delta_y_robot = final_position[1] - initial_position[1]
-                robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
-                robot_orientation = math.degrees(math.atan2(delta_y_robot, delta_x_robot))
-                gpio.actual_orientation = (robot_orientation % 360) - 360 if robot_orientation % 360 > 180 else robot_orientation % 360
-            elif key == keyboard.Key.down:
-                delta_x_robot = initial_position[0] - final_position[0]
-                delta_y_robot = initial_position[1] - final_position[1]
-                robot_orientation = math.degrees(math.atan2(delta_y_robot, delta_x_robot))
-                gpio.actual_orientation = (robot_orientation % 360) - 360 if robot_orientation % 360 > 180 else robot_orientation % 360
-                print("actual orientation after down: ", gpio.actual_orientation)
+            # if key == keyboard.Key.up:
+            #     delta_x_robot = final_position[0] - initial_position[0]
+            #     delta_y_robot = final_position[1] - initial_position[1]
+            #     robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
+            #     robot_orientation = math.degrees(math.atan2(delta_y_robot, delta_x_robot))
+            #     gpio.actual_orientation = (robot_orientation % 360) - 360 if robot_orientation % 360 > 180 else robot_orientation % 360
+            # elif key == keyboard.Key.down:
+            #     delta_x_robot = initial_position[0] - final_position[0]
+            #     delta_y_robot = initial_position[1] - final_position[1]
+            #     robot_orientation = math.degrees(math.atan2(delta_y_robot, delta_x_robot))
+            #     gpio.actual_orientation = (robot_orientation % 360) - 360 if robot_orientation % 360 > 180 else robot_orientation % 360
+            #     print("actual orientation after down: ", gpio.actual_orientation)
             # vision.root.update()
             self.start_time = None
         

@@ -1,5 +1,6 @@
 import os
 import vision
+from gpio import right_button, left_button, up_button, down_button
 from queue import Queue
 
 
@@ -27,4 +28,8 @@ if __name__ == '__main__':
         #     mostrar_frame(window_name)
 
     vision.finish_vision()
+    up_button.value = True
+    down_button.value = True
+    right_button.value = True
+    left_button.value = True
 

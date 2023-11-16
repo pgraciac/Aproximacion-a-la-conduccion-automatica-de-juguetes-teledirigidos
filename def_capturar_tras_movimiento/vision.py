@@ -8,6 +8,8 @@ import gpio
 from KeyListener import KeyListener
 from queue import Queue
 
+def transform_point(point):
+        return (point[0], frame.shape[0]-point[1])
 
 def set_color_range(event, x, y, flags, param):
     global lower_green, upper_green
@@ -118,16 +120,19 @@ def path_callback(event, x, y, flags, param):
                 
     if event == cv2.EVENT_LBUTTONDOWN:
         marking = True
+        path = []
         path.append(transform_point((x,y)))
-        print(path)
+        # print(path)
 
     elif event == cv2.EVENT_MOUSEMOVE:
         if marking:
-            path.append(transform_point((x,y)))
-            print(path)
+            if transform_point((x,y)) != path[-1]:
+                path.append(transform_point((x,y)))
+            # print(path)
             update_frame()
             
     elif event == cv2.EVENT_RBUTTONDOWN:
+        print(path)
         marking = False
         current_mark = None
 
@@ -179,21 +184,28 @@ def point_in_rois():
             return True
     return False
 
-def mostrar_frame():
+def mostrar_frame(case = None):
     global point, root
     capturar_imagen()
     set_point_in_frame()
-    update_frame()
+    update_frame(case)
 
-def transform_point(point):
-        return (point[0], frame.shape[0]-point[1])
+def add_orientation(): 
+    global combined_frame, window_name
+    angle = gpio.actual_orientation
+    orientation_text = f"{gpio.actual_orientation:.2f}"
+    cv2.putText(combined_frame, orientation_text, (transform_point(point)[0] + 10, transform_point(point)[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-def update_frame():
-    global frame, point, target_point, rois, path, window_name, limits
+    # Dibujar el ángulo con una línea
+    end_point_angle = (int(transform_point(point)[0] + 50 * math.cos(angle * np.pi / 180.0)), int(transform_point(point)[1] - 50 * math.sin(angle * np.pi / 180.0)))
+    cv2.arrowedLine(combined_frame, transform_point(point), end_point_angle, (50, 100, 0), 2, tipLength=0.5)
+    cv2.putText(combined_frame, f"Angle: {angle:.2f}", (transform_point(point)[0] + 60, transform_point(point)[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-    if point is not None:
-        cv2.circle(frame, transform_point(point), 5, (0, 0, 255), -1)
-        cv2.putText(frame, f"{point}", (transform_point(point)[0] - 50, transform_point(point)[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    cv2.imshow(window_name, combined_frame)
+
+
+def update_frame(case = None):
+    global frame, point, target_point, rois, path, window_name, limits, combined_frame
 
     if target_point is not None:
         cv2.circle(frame, transform_point(target_point), 5, (0, 0, 255), -1)
@@ -203,7 +215,7 @@ def update_frame():
     for i in range(1, len(path)):
         cv2.line(frame_line, transform_point(path[i - 1]), transform_point(path[i]), (0, 255, 0), 50)
     alpha = 1
-    beta = 0.5
+    beta = 0.3
 
     for region in rois:
         cv2.rectangle(frame, transform_point(region[0]), transform_point(region[-1]),(0,0,0),2)
@@ -213,6 +225,32 @@ def update_frame():
 
     if point_in_rois():
         cv2.putText(frame, "WARNING: POINT IS IN A INVALID PLACE", (140, 30), cv2.FONT_HERSHEY_TRIPLEX, 1, (0, 0, 255), 1)
+
+    if hasattr(gpio, 'angulo_closest_point') and hasattr(gpio, 'closest_point') and gpio.robot_pathing == True:
+        closest_point_trans = transform_point(gpio.closest_point)
+        angle = gpio.angulo_closest_point
+
+        # Dibujar el punto más cercano
+        cv2.circle(frame, closest_point_trans, 5, (50, 100, 0), -1)
+        cv2.putText(frame, f"Closest: {gpio.closest_point}", (closest_point_trans[0] + 10, closest_point_trans[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (50, 100, 0), 2)
+
+        # Dibujar el ángulo con una línea
+        end_point_angle = (int(closest_point_trans[0] + 50 * math.cos(angle * np.pi / 180.0)), int(closest_point_trans[1] - 50 * math.sin(angle * np.pi / 180.0)))
+        cv2.arrowedLine(frame, closest_point_trans, end_point_angle, (50, 100, 0), 2, tipLength=0.5)
+
+    if hasattr(gpio, 'actual_orientation') and point is not None:
+        cv2.circle(frame, transform_point(point), 5, (0, 0, 255), -1)
+        cv2.putText(frame, f"{point}", (transform_point(point)[0] - 50, transform_point(point)[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        
+        if case != "not_orientation":
+            angle = gpio.actual_orientation
+            orientation_text = f"{gpio.actual_orientation:.2f}"
+            cv2.putText(frame, orientation_text, (transform_point(point)[0] + 10, transform_point(point)[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+            # Dibujar el ángulo con una línea
+            end_point_angle = (int(transform_point(point)[0] + 50 * math.cos(angle * np.pi / 180.0)), int(transform_point(point)[1] - 50 * math.sin(angle * np.pi / 180.0)))
+            cv2.arrowedLine(frame, transform_point(point), end_point_angle, (50, 100, 0), 2, tipLength=0.5)
+            cv2.putText(frame, f"Angle: {angle:.2f}", (transform_point(point)[0] + 60, transform_point(point)[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
     combined_frame = cv2.addWeighted(frame, alpha, frame_line, beta, 0.0)
     cv2.imshow(window_name, combined_frame)
@@ -269,7 +307,7 @@ def init_vision():
 
     time.sleep(0.5)
     mostrar_frame()
-
+    print(f"height 0: {frame.shape[0]}, height 1 {frame.shape[1]}")
     cv2.setMouseCallback(window_name, set_color_range, param=frame)
     print("Haz clic en el robot para seleccionar su color")
     while lower_green is None or upper_green is None or point is None:
