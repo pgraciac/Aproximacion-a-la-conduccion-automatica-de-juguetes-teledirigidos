@@ -32,21 +32,21 @@ def set_color_range(event, x, y, flags, param):
 
 def set_point_in_frame():
     global point, lower_green, upper_green, frame
-    copy_frame = correct_illumination(frame)
+    copy_frame = frame#correct_illumination(frame)
     if lower_green is None or upper_green is None:
         return
     hsv = cv2.cvtColor(copy_frame, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_green, upper_green)
+    cv2.imshow("hsv", mask)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Variables para calcular el promedio de los centroides
     sum_cX = 0
     sum_cY = 0
     count = 0
-
     for contour in contours:
         area = cv2.contourArea(contour)
-        if area < 100:
+        if area < 30:
             continue
         M = cv2.moments(contour)
         sum_cX += int(M["m10"] / M["m00"])

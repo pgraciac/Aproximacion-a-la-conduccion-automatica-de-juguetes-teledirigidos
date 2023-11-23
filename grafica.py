@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 
 # Patrones de búsqueda para los diferentes elementos
 pattern_point = re.compile(r"point: \((\d+), (\d+)\)")
-pattern_closest_point = re.compile(r"el punto m.+s cercano de la recta es:  \((\d+), (\d+)\)")
+pattern_closest_point = re.compile(r"el punto m.+s cercano de la recta es: \((\d+), (\d+)\)")
 pattern_robot_state = re.compile(r"estado de robot: (\w+)")
-pattern_good_orientation = re.compile(r"The good orientation is:  (-*\d+\.\d+)")
+pattern_good_orientation = re.compile(r"The good orientation is: (-*\d+\.\d+)")
 
 # Listas para almacenar puntos, puntos más cercanos a la recta y buenas orientaciones
 points = []
@@ -16,7 +16,7 @@ good_orientations = []
 points_with_state = {}
 
 # Leyendo y procesando el archivo
-with open('pathing.txt', 'r') as file:
+with open('pathinglog.txt', 'r') as file:
     lines = file.readlines()
     i = 0
     for line in lines:
@@ -41,6 +41,8 @@ with open('pathing.txt', 'r') as file:
 
 # Verificación de la longitud de los arrays
 if len(points) != len(good_orientations):
+    print(len(points), len(good_orientations))
+    print(points, good_orientations)
     raise ValueError("La cantidad de puntos y buenas orientaciones no coincide.")
 
 # Creación de la gráfica
