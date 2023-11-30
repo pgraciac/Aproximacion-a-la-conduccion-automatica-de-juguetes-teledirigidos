@@ -208,13 +208,22 @@ def follow_path():
                 closest_point = vision.path[-2]
             closest_point_index = vision.path.index(closest_point)
             long_path = len(vision.path)
-            f.write(f"len path: {long_path}")
+            print(f"len path: {long_path}")
+            f.write(f"len path: {long_path}\n")
+            print(vision.path)
+            f.write("".join([str(i) for i in vision.path]))
             print(f"closest point real: {closest_point}")
-            f.write((f"closest point real: {closest_point}"))
-            if closest_point_index + 10 < long_path:
+            f.write((f"\nclosest point real: {closest_point}\n"))
+            if closest_point_index + 40 < long_path:##**CALCULAR VELOCIDAD Y DISTANCIA AL GIRO
+                print(f"closest_point_index + 10: {closest_point_index}, {closest_point_index + 10}\n")
                 f.write(f"closest_point_index + 10: {closest_point_index}, {closest_point_index + 10}")
-                closest_point_index += 10
+                closest_point_index += 40
                 closest_point = vision.path[closest_point_index]
+            else:
+                print("esta casi al final")
+                print(f"closest_point_index: {closest_point_index}")
+                f.write(f"closest_point_index + 10: {closest_point_index}\n")
+                f.write("esta casi al final\n")
             point_before_index = closest_point_index -1
             point_after_index = closest_point_index +1
             print("el punto más cercano de la recta es: ", closest_point)

@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 
 # Patrones de búsqueda para los diferentes elementos
 pattern_point = re.compile(r"point: \((\d+), (\d+)\)")
-pattern_closest_point = re.compile(r"el punto m.+s cercano de la recta es: \((\d+), (\d+)\)")
+pattern_closest_point = re.compile(r"el punto m.+s cercano de la recta es: *\((\d+), (\d+)\)")
 pattern_robot_state = re.compile(r"estado de robot: (\w+)")
-pattern_good_orientation = re.compile(r"The good orientation is: (-*\d+\.\d+)")
+pattern_good_orientation = re.compile(r"The good orientation is: *(-*\d+\.\d+)")
 
 # Listas para almacenar puntos, puntos más cercanos a la recta y buenas orientaciones
 points = []
