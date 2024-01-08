@@ -2,7 +2,7 @@ import re
 import matplotlib.pyplot as plt
 
 # Patrones de búsqueda para los diferentes elementos
-pattern_point = re.compile(r"point: \((\d+), (\d+)\)")
+pattern_point = re.compile(r"point: \((-*\d+), (-*\d+)\)")
 pattern_closest_point = re.compile(r"el punto m.+s cercano de la recta es: *\((\d+), (\d+)\)")
 pattern_robot_state = re.compile(r"estado de robot: (\w+)")
 pattern_good_orientation = re.compile(r"The good orientation is: *(-*\d+\.\d+)")
@@ -18,26 +18,47 @@ points_with_state = {}
 # Leyendo y procesando el archivo
 with open('pathinglog.txt', 'r') as file:
     lines = file.readlines()
-    i = 0
-    for line in lines:
+    for i in range(len(lines)-5):
         # Extracción de puntos y puntos más cercanos a la recta
-        if match_point := pattern_point.search(line):
-            x, y = map(int, match_point.groups())
-            points.append((x, y))
-            # Extracción del estado del robot
-            if i >= 4 and (state_line := lines[i - 4]):
-                if match_state := pattern_robot_state.search(state_line):
-                    points_with_state[(x, y)] = match_state.group(1)
+        
 
-        if match_closest_point := pattern_closest_point.search(line):
+        if match_closest_point := pattern_closest_point.search(lines[i]):
             x, y = map(int, match_closest_point.groups())
             closest_points.append((x, y))
 
         # Extracción de buenas orientaciones
-        if match_orientation := pattern_good_orientation.search(line):
+        if match_orientation := pattern_good_orientation.search(lines[i]):
             good_orientation = float(match_orientation.group(1))
             good_orientations.append(good_orientation)
-        i += 1
+
+            if match_point := pattern_point.search(lines[i-9]):
+                x, y = map(int, match_point.groups())
+                points.append((x, y))
+                # Extracción del estado del robot
+                if i >= 4 and (state_line := lines[i + 5]):
+                    if match_state := pattern_robot_state.search(state_line):
+                        points_with_state[(x, y)] = match_state.group(1)
+            elif match_point := pattern_point.search(lines[i-10]):
+                x, y = map(int, match_point.groups())
+                points.append((x, y))
+                # Extracción del estado del robot
+                if i >= 4 and (state_line := lines[i + 5]):
+                    if match_state := pattern_robot_state.search(state_line):
+                        points_with_state[(x, y)] = match_state.group(1)
+            elif match_point := pattern_point.search(lines[i-7]):
+                x, y = map(int, match_point.groups())
+                points.append((x, y))
+                # Extracción del estado del robot
+                if i >= 4 and (state_line := lines[i + 5]):
+                    if match_state := pattern_robot_state.search(state_line):
+                        points_with_state[(x, y)] = match_state.group(1)
+            elif match_point := pattern_point.search(lines[i-8]):
+                x, y = map(int, match_point.groups())
+                points.append((x, y))
+                # Extracción del estado del robot
+                if i >= 4 and (state_line := lines[i + 5]):
+                    if match_state := pattern_robot_state.search(state_line):
+                        points_with_state[(x, y)] = match_state.group(1)
 
 # Verificación de la longitud de los arrays
 if len(points) != len(good_orientations):

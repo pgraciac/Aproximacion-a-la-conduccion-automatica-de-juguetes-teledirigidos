@@ -37,7 +37,6 @@ def set_point_in_frame():
         return
     hsv = cv2.cvtColor(copy_frame, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_green, upper_green)
-    cv2.imshow("hsv", mask)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Variables para calcular el promedio de los centroides
@@ -115,8 +114,38 @@ def regions_callback(event, x, y, flags, param):
         print(rois)
         update_frame()
 
+def average_orientation(path, start_index, num_points, log=False):
+    total_sin = 0
+    total_cos = 0
+    count = 0
+
+    for i in range(start_index, start_index + num_points):
+        if i + 1 >= len(path):
+            break
+        if log:
+            print(path[i])
+            print(orientation_two_points(path[i], path[i+1]))
+        
+        angle_deg = orientation_two_points(path[i], path[i+1])
+        angle_deg = angle_deg + 360 if angle_deg < 0 else angle_deg
+        angle_rad = math.radians(angle_deg)
+
+        total_sin += math.sin(angle_rad)
+        total_cos += math.cos(angle_rad)
+        count += 1
+
+    if count == 0:
+        return None  # O devuelve un valor predeterminado si es más adecuado
+
+    average_sin = total_sin / count
+    average_cos = total_cos / count
+
+    mean_angle_rad = math.atan2(average_sin, average_cos)
+    mean_angle_deg = math.degrees(mean_angle_rad)  # Omitir si prefieres radianes
+    return mean_angle_deg
+
 def path_callback(event, x, y, flags, param):
-    global current_mark, path, marking
+    global current_mark, path, marking, path_spins
                 
     if event == cv2.EVENT_LBUTTONDOWN:
         marking = True
@@ -135,6 +164,16 @@ def path_callback(event, x, y, flags, param):
         print(path)
         marking = False
         current_mark = None
+        path_spins = []
+        path_orientation = average_orientation(path, 0, 5)
+        for i in range(0, len(path) - 5):
+            actual_path_orientation = average_orientation(path, i, 5)
+            error = (path_orientation - actual_path_orientation + 180) % 360 - 180
+            if abs(error) > 60:
+                print(average_orientation(path, i + 1, 5, True))
+                print(path[i+1], "\n------------------------------------\n")
+                path_orientation = average_orientation(path, i + 1, 5)
+                path_spins.append((path[i+1], path_orientation))
 
 def point_callback(event, x, y, flags, param):
     global current_mark, target_point
@@ -327,12 +366,25 @@ def finish_vision():
     cap.release()
     cv2.destroyAllWindows()
 
+def orientation_two_points(initial_point, final_point):
+    delta_x_point = final_point[0] - initial_point[0]
+    delta_y_point = final_point[1] - initial_point[1]
+    angle_to_target = math.atan2(delta_y_point, delta_x_point)
+    angle_to_target = math.degrees(angle_to_target)
+    #print(f"angle to target: {angle_to_target}")
+    # Calculate the angular error
+    # Normalize the error_angle to be between -pi and pi
+    angle_to_target = (angle_to_target + 180) % 360 - 180
+    # print("angulo entre", initial_point, final_point, "= ", angle_to_target)
+    return angle_to_target
+
 
 marked_regions=False
 current_roi=[]
 rois=[]
 current_point=[]
 path=[]
+path_spins=[]
 limits=[]
 target_point = None
 current_mark=None

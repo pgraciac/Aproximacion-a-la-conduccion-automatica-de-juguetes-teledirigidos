@@ -1,4 +1,5 @@
 import random
+import threading
 import time
 import board
 import keyboard
@@ -24,17 +25,6 @@ down_button = digitalio.DigitalInOut(board.C3)
 down_button.direction = digitalio.Direction.OUTPUT
 down_button.value = True
 
-def orientation_two_points(initial_point, final_point):
-    delta_x_point = final_point[0] - initial_point[0]
-    delta_y_point = final_point[1] - initial_point[1]
-    angle_to_target = math.atan2(delta_y_point, delta_x_point)
-    angle_to_target = math.degrees(angle_to_target)
-    #print(f"angle to target: {angle_to_target}")
-    # Calculate the angular error
-    # Normalize the error_angle to be between -pi and pi
-    angle_to_target = (angle_to_target + 180) % 360 - 180
-    # print("angulo entre", initial_point, final_point, "= ", angle_to_target)
-    return angle_to_target
 
 def distance_two_points(initial_point, final_point):
         delta_x_point = final_point[0] - initial_point[0]
@@ -140,24 +130,39 @@ def follow_path():
 
         return vision.path[closest_index]
     
+    def rotating(direction, sec):
+        global spining, right_button, left_button
+        spining = True
+        if direction == "right":
+            right_button.value = False
+            time.sleep(sec)
+            right_button.value = True
+        elif direction == "left":
+            left_button.value = False
+            time.sleep(sec)
+            left_button.value = True
+        spining = False
+
+
     def pathing(last_point, estado_robot, last_orientation, f, n_errores = 0):
-        global angulo_closest_point, closest_point, actual_orientation
+        global angulo_closest_point, closest_point, actual_orientation, spining
         vision.mostrar_frame("not_orientation")
         print("pathing")
         f.write("pathing\n")
+        print(f"spining: {spining}")
+        f.write(f"spining: {spining}\n")
         print(f"estado de robot: {estado_robot}")
         f.write(f"estado de robot: {estado_robot}\n")
         print(f"up button = {up_button.value}\nright button = {right_button.value}\nleft button = {left_button.value}")
         f.write(f"up button = {up_button.value}\nright button = {right_button.value}\nleft button = {left_button.value}\n")
-        # if estado_robot == None:
-        #     orientation_robot_path = orientation_two_points(vision.point, vl)
-        #     up_button.value = False
-        #     vision.root.after(50, lambda: pathing(vision.point, YENDO_RECTO, actual_orientation, f))
-        if vision.point != last_point: ##ver si cambia dos al menos
-            print(f"point: {vision.point}")
-            f.write(f"point: {vision.point}\n")
+        print(f"point: {vision.point}")
+        f.write(f"point: {vision.point}\n")
+        if spining == True:
+            vision.add_orientation()
+        if vision.point != last_point and spining == False: ##ver si cambia dos al menos
+            
             ##SI ES HACIA LA DERECHA VER SI TIENE SENTIDO LA ORIENTACION NUEVA Y TAMBIEN VER SI CAMBIA DEMASIADO LA ORIENTACION QUE NO PUEDE SER
-            actual_orientation = orientation_two_points(last_point, vision.point)
+            actual_orientation = vision.orientation_two_points(last_point, vision.point)
             real_orientation = actual_orientation
             have_error = False
             if estado_robot == GIRANDO_DERECHA:
@@ -184,17 +189,7 @@ def follow_path():
                     # print("\n------------------------------\n")
                     # return vision.root.after(1, lambda: pathing(vision.point , estado_robot, actual_orientation))
                     actual_orientation = last_orientation + 35
-            # elif estado_robot == YENDO_RECTO:
-            #     actual_orientation = actual_orientation +360 if actual_orientation < 0 else actual_orientation
-            #     last_orientation = last_orientation +360 if last_orientation < 0 else last_orientation
-            #     error = (actual_orientation - last_orientation + 180) % 360 - 180
-            #     if abs(error) > 45:
-            #         have_error = True
-            #         n_errores +=1
-            #         print(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END)
-            #         # print("\n------------------------------\n")
-            #         # return vision.root.after(1, lambda: pathing(vision.point , estado_robot, last_orientation))
-            #         actual_orientation = last_orientation
+
             actual_orientation = (actual_orientation + 180) % 360 - 180
             if n_errores > 2:
                 actual_orientation = real_orientation
@@ -208,22 +203,13 @@ def follow_path():
                 closest_point = vision.path[-2]
             closest_point_index = vision.path.index(closest_point)
             long_path = len(vision.path)
-            print(f"len path: {long_path}")
-            f.write(f"len path: {long_path}\n")
-            print(vision.path)
-            f.write("".join([str(i) for i in vision.path]))
+            f.write(f"len path: {long_path}")
             print(f"closest point real: {closest_point}")
-            f.write((f"\nclosest point real: {closest_point}\n"))
-            if closest_point_index + 40 < long_path:##**CALCULAR VELOCIDAD Y DISTANCIA AL GIRO
-                print(f"closest_point_index + 10: {closest_point_index}, {closest_point_index + 10}\n")
-                f.write(f"closest_point_index + 10: {closest_point_index}, {closest_point_index + 10}")
-                closest_point_index += 40
-                closest_point = vision.path[closest_point_index]
-            else:
-                print("esta casi al final")
-                print(f"closest_point_index: {closest_point_index}")
-                f.write(f"closest_point_index + 10: {closest_point_index}\n")
-                f.write("esta casi al final\n")
+            f.write((f"closest point real: {closest_point}"))
+            # if closest_point_index + 11 < long_path:
+            #     f.write(f"closest_point_index + 10: {closest_point_index}, {closest_point_index + 10}")
+            #     closest_point_index += 10
+            #     closest_point = vision.path[closest_point_index]
             point_before_index = closest_point_index -1
             point_after_index = closest_point_index +1
             print("el punto más cercano de la recta es: ", closest_point)
@@ -231,13 +217,13 @@ def follow_path():
             # print(f"el punto más cercano es {closest_point} y la tangente la calculo con {vision.path[point_before_index]}, {vision.path[point_after_index]}")
             while vision.path[point_before_index] == vision.path[point_after_index]:
                 point_after_index+=1
-            angulo_closest_point = orientation_two_points(vision.path[point_before_index], vision.path[point_after_index])
+            angulo_closest_point = vision.orientation_two_points(vision.path[point_before_index], vision.path[point_after_index])
             print("angulo de la recta: ",angulo_closest_point)
             f.write(f"angulo de la recta: {angulo_closest_point}\n")
             # error_angle = angulo_closest_point - actual_orientation
             # error_angle = (error_angle + 180) % 360 - 180
             # print(f"angulo de error entre actual orientation y el angulo de la recta: {error_angle}")
-            orientation_robot_path = orientation_two_points(vision.point, closest_point)
+            orientation_robot_path = vision.orientation_two_points(vision.point, closest_point)
             print(f"angulo entre el robot y el punto mas cercano a la recta: {orientation_robot_path}")
             f.write(f"angulo entre el robot y el punto mas cercano a la recta: {orientation_robot_path}\n")
             last_distance = distance_two_points(closest_point, last_point)
@@ -245,13 +231,17 @@ def follow_path():
             print("la distancia actual es de: ", actual_distance)
             f.write(f"la distancia actual es de: {actual_distance}\n")
             
-            if actual_distance > 80:
-                
+            # if estado_robot == YENDO_RECTO:
+            #     actual_orientation_rad = math.radians(actual_orientation)
+            #     estimate_point = (round(vision.point[0] + 40 * math.cos(actual_orientation_rad)), round(vision.point[1] + 40 * math.sin(actual_orientation_rad)))
+            #     estimate_distance = distance_two_points(closest_point, estimate_point)
+            #     estimate_orientation_robot_path = vision.orientation_two_points(estimate_point, closest_point)
+            if actual_distance > 80: 
                 up_button.value = True
                 right_button.value = True
                 left_button.value = True
-                print("muy lejos")
-                f.write("muy lejos")
+                print(RED + "Se sale de la linea" + END)
+                f.write(RED + "Se sale de la linea" + END)
                 vision.mostrar_frame()
                 time.sleep(1)
                 vision.mostrar_frame()
@@ -259,7 +249,7 @@ def follow_path():
                 f.write("mostrar frame")
                 closest_point = get_closest_path_point()
                 vision.target_point = closest_point
-                actual_orientation = orientation_two_points(last_point, vision.point)
+                actual_orientation = vision.orientation_two_points(last_point, vision.point)
                 vision.mostrar_frame()
                 vision.root.update()
                 print("root update\n-----------------------------------\n")
@@ -274,7 +264,7 @@ def follow_path():
                 print("the factor is: ",factor)
                 f.write(f"the factor is: {factor}\n")
                 next_point_path = vision.path[closest_point_index + 1]
-                orientation_robot_next_point_path = orientation_two_points(vision.point, next_point_path)
+                orientation_robot_next_point_path = vision.orientation_two_points(vision.point, next_point_path)
                 print(f"orientacion al siguiente punto de la recta: {orientation_robot_next_point_path}")
                 f.write(f"orientacion al siguiente punto de la recta: {orientation_robot_next_point_path}\n")
                 orientation_robot_path = orientation_robot_path + 360 if orientation_robot_path < 0 else orientation_robot_path
@@ -285,16 +275,7 @@ def follow_path():
                     angulo_closest_point = (angulo_closest_point + 180) % 360 - 180
                 good_orientation = (1-factor)*orientation_robot_path+factor*angulo_closest_point
                 good_orientation = (good_orientation + 180) % 360 - 180
-                # orientation_robot_next_point_path = orientation_robot_next_point_path + 360 if orientation_robot_next_point_path < 0 else orientation_robot_next_point_path
-                # if orientation_robot_next_point_path > orientation_robot_path: ##Tener en cuenta distancia
-                #     #Izquierda
-                #     print("recta va hacia la izquierda")
-                #     angulo_closest_point = angulo_closest_point + 360 if angulo_closest_point < 0 else angulo_closest_point
-                # else:
-                #     print("recta va hacia la derecha")
-                #     orientation_robot_path = (orientation_robot_path + 180) % 360 - 180
-                # good_orientation = (1-factor)*orientation_robot_path+factor*angulo_closest_point
-                # good_orientation = (good_orientation + 180) % 360 - 180
+
             print("The good orientation is: ",good_orientation)
             f.write(f"The good orientation is: {good_orientation}\n")
             # if estado_robot == GIRANDO_DERECHA:
@@ -304,6 +285,10 @@ def follow_path():
             # else:
             #     estimacion_orientacion = actual_orientation
             # estimacion_orientacion = (estimacion_orientacion + 180) % 360 - 180
+            # if estado_robot == YENDO_RECTO:
+            #     estimacion_orientacion = estimate_orientation_robot_path
+            # else:
+            #     estimacion_orientacion = actual_orientation
             estimacion_orientacion = actual_orientation
             print("estimacion orientacion: ", estimacion_orientacion)
             f.write(f"estimacion orientacion: {estimacion_orientacion}\n")
@@ -311,6 +296,24 @@ def follow_path():
             error_orientation = (error_orientation + 180) % 360 - 180
             print(f"error de orientacion entre actual orientation y good orientation: {error_orientation}")
             f.write(f"error de orientacion entre actual orientation y good orientation: {error_orientation}\n")
+            # rotate_duration = 0.1 * abs(error_orientation) / (spin_right_second - 20)
+            # if rotate_duration < 0.05:
+            #     rotate_duration = 0.05
+            # if error_orientation < 20:
+            #     rotating("left", rotate_duration)
+            #     print(f"robot has to go left {rotate_duration} sec")
+            #     f.write(f"robot has to go left {rotate_duration} sec")
+            #     hilo = threading.Thread(target=rotating, args=("left", rotate_duration))
+            #     hilo.start()
+            # elif error_orientation > 20:
+            #     rotating("right", rotate_duration)
+            #     print(f"robot has to go right {rotate_duration} sec")
+            #     f.write(f"robot has to go right {rotate_duration} sec")
+            #     hilo = threading.Thread(target=rotating, args=("right", rotate_duration))
+            #     hilo.start()
+            # else:
+            #     print("sigue recto")
+            #     f.write("sigue recto\n")
             if estado_robot == YENDO_RECTO:
                 print("yendo recto")
                 f.write("yendo recto\n")
@@ -355,7 +358,7 @@ def follow_path():
                     up_button.value = False
 
             # Verificar si el robot ha alcanzado el final de la trayectoria
-            if distance_two_points(vision.point, vision.path[-1]) < 20 or closest_point == vision.path[-2]:  # Suponiendo que 20 es un umbral para estar "suficientemente cerca" del final
+            if distance_two_points(vision.point, vision.path[-1]) < 50 or closest_point == vision.path[-2]:  # Suponiendo que 20 es un umbral para estar "suficientemente cerca" del final
                 up_button.value = True
                 right_button.value = True
                 left_button.value = True
@@ -384,7 +387,7 @@ def follow_path():
         # up_button.value = False
         # estado_robot = YENDO_RECTO
         robot_pathing = True
-        orientation_robot_path = orientation_two_points(vision.point, get_closest_path_point())
+        orientation_robot_path = vision.orientation_two_points(vision.point, get_closest_path_point())
         error_angle = (orientation_robot_path - actual_orientation + 180) % 360 - 180
         time.sleep(1)
         if error_angle > -30 or error_angle < 30:
@@ -402,9 +405,10 @@ def follow_path():
         pathing(vision.point, estado_robot, actual_orientation, f)
         
 
-    def on_target_reached(closest_point = None):
+    def on_target_reached(first_point = None):
+        global angulo_closest_point, closest_point
         print(GREEN + "ha llegado al punto" + END)
-        if closest_point == None:
+        if first_point == None:
             closest_point = get_closest_path_point()
             if closest_point == vision.path[0]: #Mirando si es el primero para que no coja el anterior como el ultimo de la lista
                 closest_point = vision.path[1]
@@ -420,17 +424,20 @@ def follow_path():
         print("el punto más cercano de la recta es: ", closest_point)
         # print(f"el punto más cercano es {closest_point} y la tangente la calculo con {vision.path[point_before_index]}, {vision.path[point_after_index]}")
         while vision.path[point_before_index] == vision.path[point_after_index]:
-            point_after_index+=1
-        path_orientation = orientation_two_points(vision.path[point_before_index], vision.path[point_after_index])
-        print("angulo de la recta: ",path_orientation)
-        error_angle = path_orientation - actual_orientation
+            if vision.path.index(vision.path[-1]) == point_after_index:
+                point_before_index -= -1
+            else:
+                point_after_index+=1
+        angulo_closest_point = vision.orientation_two_points(vision.path[point_before_index], vision.path[point_after_index])
+        print("angulo de la recta: ",angulo_closest_point)
+        error_angle = angulo_closest_point - actual_orientation
         error_angle = (error_angle + 180) % 360 - 180
         print("angulo de error con el camino:", error_angle)
         up_down="up"
         time.sleep(1)
         while abs(error_angle) > 30:
             print("angulo de error con el camino:", error_angle)
-            print("path orientation", path_orientation)
+            print("path orientation", angulo_closest_point)
             move_duration = 0.05 * distance_to_target() / distance_second
             if move_duration < 0.05:
                 move_duration = 0.05
@@ -452,7 +459,7 @@ def follow_path():
                 #vision.root.update()
                 move(up_down, move_duration)
             up_down = "up" if up_down == "down" else "down"
-            error_angle = path_orientation - actual_orientation
+            error_angle = angulo_closest_point - actual_orientation
             print("\n------------------------------\n")
         print("preparado para seguirla")
         begin_path()
@@ -795,6 +802,8 @@ spin_up_right_secon = 40
 distance_second = 25
 robot_pathing = False
 total_distance = []
+index_path_spin = 0
+spining = False
 
 RED = '\033[91m'
 GREEN = '\033[92m'
