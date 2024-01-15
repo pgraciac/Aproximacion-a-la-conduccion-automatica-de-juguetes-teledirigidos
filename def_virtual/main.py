@@ -1,6 +1,10 @@
 import os
+import threading
 import vision
 from queue import Queue
+import time
+from KeyListener import KeyListener
+import cv2
 
 
 
@@ -14,17 +18,12 @@ from queue import Queue
 
 if __name__ == '__main__':
     #os.environ['BLINKA_FT232H'] = '1'
-    
-
-    warning = False
-    events_queue = Queue()
+    listener = KeyListener(None)
+    listener.start()
     vision.init_vision()
-    # update_point(cap, window_name, listener)
-    while vision.listener.running():
-        vision.root.update()
-        # vision.mostrar_frame()
-        # if vision.current_mark != None:
-        #     mostrar_frame(window_name)
 
-    vision.finish_vision()
+    while listener.running():
+        cv2.waitKey(1)
+
+    # vision.finish_vision()
 

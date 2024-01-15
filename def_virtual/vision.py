@@ -1,4 +1,5 @@
 import sys
+import threading
 import time
 import tkinter as tk
 import cv2
@@ -112,7 +113,7 @@ def regions_callback(event, x, y, flags, param):
         print("current roi:", current_roi)
         rois.append(current_roi)
         print(rois)
-        update_frame()
+        update_frame("None")
 
 def average_orientation(path, start_index, num_points, log=False):
     total_sin = 0
@@ -158,7 +159,7 @@ def path_callback(event, x, y, flags, param):
             if transform_point((x,y)) != path[-1]:
                 path.append(transform_point((x,y)))
             # print(path)
-            update_frame()
+            update_frame("None")
             
     elif event == cv2.EVENT_RBUTTONDOWN:
         print(path)
@@ -182,19 +183,19 @@ def point_callback(event, x, y, flags, param):
         target_point = transform_point((x, y))
         print(target_point)
         current_mark = None
-        update_frame()
+        update_frame("None")
 
 def limits_callback(event, x, y, flags, param):
     global limits, current_mark
     if event == cv2.EVENT_LBUTTONDOWN:
         new_point = (x, y)
         limits.append(transform_point(new_point))
-        update_frame()
+        update_frame("None")
 
     elif event == cv2.EVENT_RBUTTONDOWN:
         current_mark = None
         limits.append(limits[0])
-        update_frame()
+        update_frame("None")
 
 
 def main_mouse_callback(event, x, y, flags, param):
@@ -223,10 +224,11 @@ def point_in_rois():
             return True
     return False
 
-def mostrar_frame(case = None):
-    global point, root
+def mostrar_frame(mov = "None"):
+    global point#, root
     capturar_imagen()
-    update_frame(case)
+    update_frame(mov)
+    # cv2.waitKey(0)
 
 def add_orientation(): 
     global combined_frame, window_name
@@ -242,8 +244,8 @@ def add_orientation():
     cv2.imshow(window_name, combined_frame)
 
 
-def update_frame(case = None):
-    global frame, point, target_point, rois, path, window_name, limits, combined_frame
+def update_frame(mov):
+    global frame, point, target_point, rois, path, window_name, limits, combined_frame, last_point, actual_orientation
 
     if target_point is not None:
         cv2.circle(frame, transform_point(target_point), 5, (0, 0, 255), -1)
@@ -276,20 +278,50 @@ def update_frame(case = None):
         end_point_angle = (int(closest_point_trans[0] + 50 * math.cos(angle * np.pi / 180.0)), int(closest_point_trans[1] - 50 * math.sin(angle * np.pi / 180.0)))
         cv2.arrowedLine(frame, closest_point_trans, end_point_angle, (50, 100, 0), 2, tipLength=0.5)
 
-    if hasattr(gpio_virtual, 'actual_orientation') and point is not None:
+    # if hasattr(gpio_virtual, 'actual_orientation') and point is not None:
+    #     cv2.circle(frame, transform_point(point), 5, (0, 0, 255), -1)
+    #     cv2.putText(frame, f"{point}", (transform_point(point)[0] - 50, transform_point(point)[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        
+    #     if case != "not_orientation":
+    #         angle = gpio_virtual.actual_orientation
+    #         orientation_text = f"{gpio_virtual.actual_orientation:.2f}"
+    #         cv2.putText(frame, orientation_text, (transform_point(point)[0] + 10, transform_point(point)[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+    #         # Dibujar el ángulo con una línea
+    #         end_point_angle = (int(transform_point(point)[0] + 50 * math.cos(angle * np.pi / 180.0)), int(transform_point(point)[1] - 50 * math.sin(angle * np.pi / 180.0)))
+    #         cv2.arrowedLine(frame, transform_point(point), end_point_angle, (50, 100, 0), 2, tipLength=0.5)
+    #         cv2.putText(frame, f"Angle: {angle:.2f}", (transform_point(point)[0] + 60, transform_point(point)[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        
+    if point is not None:
         cv2.circle(frame, transform_point(point), 5, (0, 0, 255), -1)
         cv2.putText(frame, f"{point}", (transform_point(point)[0] - 50, transform_point(point)[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+    if (mov != "right" and mov != "left") and last_point != None and mov != "None":
+        print("cambiando orientacion", last_point, point)
+        delta_x_robot = 0
+        delta_y_robot = 0
+        if mov == "up" or mov == "up-right" or mov == "up-left" or mov == "pathing":
+            delta_x_robot = point[0] - last_point[0]
+            delta_y_robot = point[1] - last_point[1]
+        elif mov == "down" or mov == "down-right" or mov == "down-left":
+            delta_x_robot = last_point[0] - point[0]
+            delta_y_robot = last_point[1] - point[1]
+        print(f'delta y: {delta_y_robot} delta x: {delta_x_robot}')
+        if abs(delta_y_robot) + abs(delta_x_robot) > 2:
+            robot_orientation = math.degrees(math.atan2(delta_y_robot, delta_x_robot))
+            actual_orientation = (robot_orientation % 360) - 360 if robot_orientation % 360 > 180 else robot_orientation % 360
+            print(f"actual orientation after {mov}: {actual_orientation}")
         
-        if case != "not_orientation":
-            angle = gpio_virtual.actual_orientation
-            orientation_text = f"{gpio_virtual.actual_orientation:.2f}"
-            cv2.putText(frame, orientation_text, (transform_point(point)[0] + 10, transform_point(point)[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        orientation_text = f"{actual_orientation:.2f}"
+        cv2.putText(frame, orientation_text, (transform_point(point)[0] + 10, transform_point(point)[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-            # Dibujar el ángulo con una línea
-            end_point_angle = (int(transform_point(point)[0] + 50 * math.cos(angle * np.pi / 180.0)), int(transform_point(point)[1] - 50 * math.sin(angle * np.pi / 180.0)))
-            cv2.arrowedLine(frame, transform_point(point), end_point_angle, (50, 100, 0), 2, tipLength=0.5)
-            cv2.putText(frame, f"Angle: {angle:.2f}", (transform_point(point)[0] + 60, transform_point(point)[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        # Dibujar el ángulo con una línea
+        end_point_angle = (int(transform_point(point)[0] + 50 * math.cos(actual_orientation * np.pi / 180.0)), int(transform_point(point)[1] - 50 * math.sin(actual_orientation * np.pi / 180.0)))
+        cv2.arrowedLine(frame, transform_point(point), end_point_angle, (50, 100, 0), 2, tipLength=0.5)
+        cv2.putText(frame, f"Angle: {actual_orientation:.2f}", (transform_point(point)[0] + 60, transform_point(point)[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
+
+    last_point = point
     combined_frame = cv2.addWeighted(frame, alpha, frame_line, beta, 0.0)
     cv2.imshow(window_name, combined_frame)
 
@@ -316,31 +348,31 @@ def robot_in_limits():
     return odd_nodes
 
 def init_vision():
-    global cap, window_name, root, listener, point
+    global cap, window_name, listener, point#,root
     cv2.namedWindow(window_name)
+    cap = cv2.VideoCapture(1)
+
+    # root.title("Menú")
+    # listener.start()
     
-    root.title("Menú")
-    listener.start()
-    
 
-    btn_marcar_regiones = tk.Button(root, text="Marcar regiones", command=lambda: set_current_mark("regions"))
-    btn_dibujar_trayectoria = tk.Button(root, text="Dibujar trayectoria", command=lambda: set_current_mark("path"))
-    btn_marcar_meta = tk.Button(root, text="Marcar meta", command=lambda: set_current_mark("target_point"))
-    btn_llegar_meta = tk.Button(root, text="Llegar a meta", command=lambda: gpio_virtual.move_to_target())
-    # btn_marcar_robot = tk.Button(root, text="Marcar robot", command=lambda: set_color_range(frame))
-    btn_calibrate_spin = tk.Button(root, text="Calibrar giro", command=lambda: gpio_virtual.calibrate_rotation())
-    btn_marcar_limites = tk.Button(root, text="Marcar limites", command=lambda: set_current_mark("limits"))
-    btn_seguir_trayectoria = tk.Button(root, text="Seguir trayectoria", command=lambda: gpio_virtual.follow_path())
+    # btn_marcar_regiones = tk.Button(root, text="Marcar regiones", command=lambda: set_current_mark("regions"))
+    # btn_dibujar_trayectoria = tk.Button(root, text="Dibujar trayectoria", command=lambda: set_current_mark("path"))
+    # btn_marcar_meta = tk.Button(root, text="Marcar meta", command=lambda: set_current_mark("target_point"))
+    # btn_llegar_meta = tk.Button(root, text="Llegar a meta", command=lambda: gpio_virtual.move_to_target())
+    # # btn_marcar_robot = tk.Button(root, text="Marcar robot", command=lambda: set_color_range(frame))
+    # btn_calibrate_spin = tk.Button(root, text="Calibrar giro", command=lambda: gpio_virtual.calibrate_rotation())
+    # btn_marcar_limites = tk.Button(root, text="Marcar limites", command=lambda: set_current_mark("limits"))
+    # btn_seguir_trayectoria = tk.Button(root, text="Seguir trayectoria", command=lambda: gpio_virtual.follow_path())
 
-    btn_marcar_regiones.pack(fill=tk.BOTH, expand=True)
-    btn_dibujar_trayectoria.pack(fill=tk.BOTH, expand=True)
-    btn_marcar_meta.pack(fill=tk.BOTH, expand=True)
-    btn_llegar_meta.pack(fill=tk.BOTH, expand=True)
-    btn_calibrate_spin.pack(fill=tk.BOTH, expand=True)
-    # btn_marcar_robot.pack(fill=tk.BOTH, expand=True)
-    btn_marcar_limites.pack(fill=tk.BOTH, expand=True)
-    btn_seguir_trayectoria.pack(fill=tk.BOTH, expand=True)
-
+    # btn_marcar_regiones.pack(fill=tk.BOTH, expand=True)
+    # btn_dibujar_trayectoria.pack(fill=tk.BOTH, expand=True)
+    # btn_marcar_meta.pack(fill=tk.BOTH, expand=True)
+    # btn_llegar_meta.pack(fill=tk.BOTH, expand=True)
+    # btn_calibrate_spin.pack(fill=tk.BOTH, expand=True)
+    # # btn_marcar_robot.pack(fill=tk.BOTH, expand=True)
+    # btn_marcar_limites.pack(fill=tk.BOTH, expand=True)
+    # btn_seguir_trayectoria.pack(fill=tk.BOTH, expand=True)
     cap.read()
     mostrar_frame()
     print(f"height 0: {frame.shape[0]}, height 1 {frame.shape[1]}")
@@ -350,6 +382,9 @@ def init_vision():
     mostrar_frame()
 
     cv2.setMouseCallback(window_name, main_mouse_callback)
+        
+    # check_thread = threading.Thread(target=listener.check_listener)
+    # check_thread.start()
 
 
 def finish_vision():
@@ -381,12 +416,12 @@ target_point = None
 current_mark=None
 marking=False
 point=None
+last_point=None
+actual_orientation = 0
 lower_green = None
 upper_green = None
 frame = None
-root = tk.Tk()
+#root = tk.Tk()
 window_name="Detectar_robot"
-listener = KeyListener(None)
-cap = cv2.VideoCapture(1)
 events_queue = Queue()
 

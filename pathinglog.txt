@@ -1,220 +1,368 @@
 pathing
 spining: False
+point: (665, 584)
+actual orientation: -177.35745470593528
+closest point real: (662, 611)
+el punto más cercano de la recta es: (662, 611)
+angulo de la recta: -180.0
+angulo entre el robot y el punto mas cercano a la recta: 96.34019174590992
+la distancia actual es de: 27.16615541441225
+The good orientation is: 174.67332339147526
+error de orientacion entre actual orientation y good orientation: 7.969221902589425
+seguir recto
 estado de robot: yendo_recto
-up button = False
-right button = True
-left button = True
-point: (923, 582)
-actual orientation: -104.03624346792648
-len path: 290closest point real: (917, 578)el punto más cercano de la recta es: (917, 578)
-angulo de la recta: -66.80140948635182
-angulo entre el robot y el punto mas cercano a la recta: -146.30993247402023
-la distancia actual es de: 7.211102550927978
-The good orientation is: -66.80140948635182
-estimacion orientacion: -104.03624346792648
-error de orientacion entre actual orientation y good orientation: -37.23483398157467
-yendo recto
-robot has to go left
 esta lejos todavia, rootafter
 ------------------------------
 pathing
 spining: False
-estado de robot: girando_izquierda
-up button = False
-right button = True
-left button = False
-point: (922, 578)
-actual orientation: -104.03624346792651
-len path: 290closest point real: (917, 578)el punto más cercano de la recta es: (917, 578)
-angulo de la recta: -66.80140948635182
-angulo entre el robot y el punto mas cercano a la recta: -180.0
-la distancia actual es de: 5.0
-The good orientation is: -66.80140948635182
-estimacion orientacion: -104.03624346792651
-error de orientacion entre actual orientation y good orientation: -37.234833981574695
-robot has to go left
-esta lejos todavia, rootafter
-------------------------------
-pathing
-spining: False
-estado de robot: girando_izquierda
-up button = False
-right button = True
-left button = False
-point: (914, 555)
-actual orientation: -109.17900802581073
-len path: 290closest point real: (924, 559)el punto más cercano de la recta es: (924, 559)
-angulo de la recta: -63.43494882292201
-angulo entre el robot y el punto mas cercano a la recta: 21.801409486351815
-la distancia actual es de: 10.770329614269007
-The good orientation is: -63.43494882292201
-estimacion orientacion: -109.17900802581073
-error de orientacion entre actual orientation y good orientation: -45.74405920288871
-robot has to go left
-esta lejos todavia, rootafter
-------------------------------
-pathing
-spining: False
-estado de robot: girando_izquierda
-up button = False
-right button = True
-left button = False
-point: (910, 543)
-actual orientation: -108.43494882292202
-len path: 290closest point real: (926, 554)el punto más cercano de la recta es: (926, 554)
-angulo de la recta: -68.19859051364818
-angulo entre el robot y el punto mas cercano a la recta: 34.508522987668414
-la distancia actual es de: 19.4164878389476
-The good orientation is: -68.19859051364818
-estimacion orientacion: -108.43494882292202
-error de orientacion entre actual orientation y good orientation: -40.23635830927384
-robot has to go left
-esta lejos todavia, rootafter
-------------------------------
-pathing
-spining: False
-estado de robot: girando_izquierda
-up button = False
-right button = True
-left button = False
-point: (905, 530)
-actual orientation: -111.03751102542185
-len path: 290closest point real: (932, 541)el punto más cercano de la recta es: (932, 541)
-angulo de la recta: -68.19859051364818
-angulo entre el robot y el punto mas cercano a la recta: 22.166345822082462
-la distancia actual es de: 29.154759474226502
-The good orientation is: -68.19859051364818
-estimacion orientacion: -111.03751102542185
-error de orientacion entre actual orientation y good orientation: -42.838920511773665
-robot has to go left
-esta lejos todavia, rootafter
-------------------------------
-pathing
-spining: False
-estado de robot: girando_izquierda
-up button = False
-right button = True
-left button = False
-point: (902, 523)
-actual orientation: -113.19859051364818
-len path: 290closest point real: (936, 530)el punto más cercano de la recta es: (936, 530)
-angulo de la recta: -71.56505117707799
-angulo entre el robot y el punto mas cercano a la recta: 11.63363399894044
-la distancia actual es de: 34.713109915419565
-The good orientation is: -71.56505117707799
-estimacion orientacion: -113.19859051364818
-error de orientacion entre actual orientation y good orientation: -41.63353933657021
-robot has to go left
-esta lejos todavia, rootafter
-------------------------------
-pathing
-spining: False
-estado de robot: girando_izquierda
-up button = False
-right button = True
-left button = False
-point: (901, 489)
-actual orientation: -91.68468431789631
-len path: 290closest point real: (943, 504)el punto más cercano de la recta es: (943, 504)
-angulo de la recta: -71.56505117707799
-angulo entre el robot y el punto mas cercano a la recta: 19.653824058053317
-la distancia actual es de: 44.598206241955516
-The good orientation is: -71.56505117707799
-estimacion orientacion: -91.68468431789631
-error de orientacion entre actual orientation y good orientation: -20.119633140818337
-robot has to go left
-esta lejos todavia, rootafter
-------------------------------
-pathing
-spining: False
-estado de robot: girando_izquierda
-up button = False
-right button = True
-left button = False
-point: (904, 483)
-actual orientation: -63.434948822922024
-len path: 290closest point real: (946, 493)el punto más cercano de la recta es: (946, 493)
-angulo de la recta: -80.53767779197439
-angulo entre el robot y el punto mas cercano a la recta: 13.392497753751087
-la distancia actual es de: 43.174066289845804
-The good orientation is: -80.53767779197439
-estimacion orientacion: -63.434948822922024
-error de orientacion entre actual orientation y good orientation: 17.10272896905235
-El robot tiene que ir recto
-esta lejos todavia, rootafter
-------------------------------
-pathing
-spining: False
-estado de robot: yendo_recto
-up button = False
-right button = True
-left button = True
-point: (924, 465)
-actual orientation: -41.987212495816664
-len path: 290closest point real: (951, 467)el punto más cercano de la recta es: (951, 467)
-angulo de la recta: -84.28940686250037
-angulo entre el robot y el punto mas cercano a la recta: 4.236394799058843
-la distancia actual es de: 27.073972741361768
-The good orientation is: -84.28940686250037
-estimacion orientacion: -41.987212495816664
-error de orientacion entre actual orientation y good orientation: 42.30219436668369
-yendo recto
-robot has to go right
-esta lejos todavia, rootafter
-------------------------------
-pathing
-spining: False
-estado de robot: girando_derecha
-up button = False
-right button = False
-left button = True
-point: (924, 465)
+point: (665, 584)
 no se ha actualizado el frame
 ------------------------------
 pathing
 spining: False
-estado de robot: girando_derecha
-up button = False
-right button = False
-left button = True
-point: (954, 465)
-[91mError de orientacion detecta 0.0[0m
-actual orientation: -76.98721249581666
-len path: 290closest point real: (951, 467)el punto más cercano de la recta es: (951, 467)
-angulo de la recta: -84.28940686250037
-angulo entre el robot y el punto mas cercano a la recta: 146.30993247402023
-la distancia actual es de: 3.605551275463989
-The good orientation is: -84.28940686250037
-estimacion orientacion: -76.98721249581666
-error de orientacion entre actual orientation y good orientation: 7.302194366683693
-El robot tiene que ir recto
-Ha habido erroresta lejos todavia, rootafter
-------------------------------
-pathing
-spining: False
+point: (624, 584)
+actual orientation: 180.0
+closest point real: (634, 611)
+el punto más cercano de la recta es: (634, 611)
+angulo de la recta: 175.0302592718897
+angulo entre el robot y el punto mas cercano a la recta: 69.67686317033707
+la distancia actual es de: 28.792360097775937
+The good orientation is: 167.9207914951408
+error de orientacion entre actual orientation y good orientation: 12.079208504859196
+seguir recto
 estado de robot: yendo_recto
-up button = False
-right button = True
-left button = True
-point: (974, 472)
-actual orientation: 19.290046219188724
-len path: 290closest point real: (951, 467)el punto más cercano de la recta es: (951, 467)
-angulo de la recta: -84.28940686250037
-angulo entre el robot y el punto mas cercano a la recta: -167.7352262721076
-la distancia actual es de: 23.53720459187964
-The good orientation is: -84.28940686250037
-estimacion orientacion: 19.290046219188724
-error de orientacion entre actual orientation y good orientation: 103.57945308168911
-yendo recto
-robot has to go right
 esta lejos todavia, rootafter
 ------------------------------
 pathing
 spining: False
+point: (612, 584)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (526, 586)
+actual orientation: 178.66778014613035
+closest point real: (530, 621)
+el punto más cercano de la recta es: (530, 621)
+angulo de la recta: -180.0
+angulo entre el robot y el punto mas cercano a la recta: 83.48019824834302
+la distancia actual es de: 35.22782990761707
+The good orientation is: 172.03082072150556
+error de orientacion entre actual orientation y good orientation: 6.636959424624791
+seguir recto
+estado de robot: yendo_recto
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (526, 586)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (473, 592)
+actual orientation: 173.29016319224309
+closest point real: (473, 616)
+el punto más cercano de la recta es: (473, 616)
+angulo de la recta: -175.2363583092738
+angulo entre el robot y el punto mas cercano a la recta: 90.0
+la distancia actual es de: 24.0
+The good orientation is: 179.4331868456228
+error de orientacion entre actual orientation y good orientation: -6.143023653379714
+seguir recto
+estado de robot: yendo_recto
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (464, 594)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (427, 601)
+actual orientation: 169.28687697720898
+closest point real: (430, 613)
+el punto más cercano de la recta es: (430, 613)
+angulo de la recta: -176.82016988013575
+angulo entre el robot y el punto mas cercano a la recta: 75.96375653207355
+la distancia actual es de: 12.36931687685298
+The good orientation is: -179.92842672818114
+error de orientacion entre actual orientation y good orientation: -10.78469629460983
+seguir recto
+estado de robot: yendo_recto
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (409, 602)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (391, 602)
+actual orientation: 180.0
+closest point real: (390, 608)
+el punto más cercano de la recta es: (390, 608)
+angulo de la recta: -169.69515353123398
+angulo entre el robot y el punto mas cercano a la recta: 99.46232220802563
+la distancia actual es de: 6.082762530298219
+The good orientation is: -170.9902476782596
+error de orientacion entre actual orientation y good orientation: -9.009752321740393
+seguir recto
+estado de robot: yendo_recto
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (359, 605)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (320, 607)
+actual orientation: 177.06432655357884
+closest point real: (341, 597)
+el punto más cercano de la recta es: (341, 597)
+angulo de la recta: -101.30993247402021
+angulo entre el robot y el punto mas cercano a la recta: -25.46334506187162
+la distancia actual es de: 23.259406699226016
+The good orientation is: -97.17521382550251
+error de orientacion entre actual orientation y good orientation: -85.76045962091865
+robot has to go left
+estado de robot: girando_izquierda
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (311, 604)
+actual orientation: -165.96375653207352
+closest point real: (341, 597)
+el punto más cercano de la recta es: (341, 597)
+angulo de la recta: -101.30993247402021
+angulo entre el robot y el punto mas cercano a la recta: -13.134022306396332
+la distancia actual es de: 30.805843601498726
+The good orientation is: -94.94352630673052
+error de orientacion entre actual orientation y good orientation: -71.020230225343
+robot has to go left
+estado de robot: girando_izquierda
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (300, 586)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (310, 560)
+actual orientation: -68.9624889745782
+closest point real: (342, 566)
+el punto más cercano de la recta es: (342, 566)
+angulo de la recta: -80.53767779197439
+angulo entre el robot y el punto mas cercano a la recta: 10.619655276155129
+la distancia actual es de: 32.55764119219941
+The good orientation is: -73.58173777149786
+error de orientacion entre actual orientation y good orientation: 4.619248796919635
+El robot tiene que ir recto
+estado de robot: yendo_recto
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (320, 541)
+actual orientation: -68.19859051364818
+closest point real: (344, 537)
+el punto más cercano de la recta es: (344, 537)
+angulo de la recta: -90.0
+angulo entre el robot y el punto mas cercano a la recta: -9.462322208025626
+la distancia actual es de: 24.331050121192877
+The good orientation is: -85.4072665429664
+error de orientacion entre actual orientation y good orientation: 17.208676029318212
+seguir recto
+estado de robot: yendo_recto
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (328, 518)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (338, 492)
+actual orientation: -66.37062226934319
+closest point real: (343, 489)
+el punto más cercano de la recta es: (343, 489)
+angulo de la recta: -90.0
+angulo entre el robot y el punto mas cercano a la recta: -30.963756532073518
+la distancia actual es de: 5.830951894845301
+The good orientation is: -89.19319336942067
+error de orientacion entre actual orientation y good orientation: 22.822571100077482
+robot has to go right
 estado de robot: girando_derecha
-up button = False
-right button = False
-left button = True
-point: (981, 473)
-actual orientation: 8.13010235415598
-len path: 290closest point real: (951, 467)
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (325, 461)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (290, 429)
+actual orientation: -137.56377021146503
+closest point real: (350, 441)
+el punto más cercano de la recta es: (350, 441)
+angulo de la recta: -79.2157021324374
+angulo entre el robot y el punto mas cercano a la recta: 11.3099324740202
+la distancia actual es de: 61.18823416311342
+The good orientation is: -66.23342776978653
+error de orientacion entre actual orientation y good orientation: -71.3303424416785
+robot has to go left
+estado de robot: girando_izquierda
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (273, 420)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (252, 391)
+actual orientation: -125.90972307917767
+closest point real: (355, 412)
+el punto más cercano de la recta es: (355, 412)
+angulo de la recta: -80.53767779197439
+angulo entre el robot y el punto mas cercano a la recta: 11.523721703897337
+la distancia actual es de: 105.11898020814318
+The good orientation is: -57.85627053055131
+error de orientacion entre actual orientation y good orientation: -68.05345254862635
+robot has to go left
+estado de robot: girando_izquierda
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (252, 389)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (269, 369)
+actual orientation: -71.56505117707798
+closest point real: (359, 387)
+el punto más cercano de la recta es: (359, 387)
+angulo de la recta: -82.23483398157467
+angulo entre el robot y el punto mas cercano a la recta: 11.3099324740202
+la distancia actual es de: 91.78235124467012
+The good orientation is: -62.11196223486829
+error de orientacion entre actual orientation y good orientation: -9.453088942209689
+El robot tiene que ir recto
+estado de robot: yendo_recto
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (275, 357)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (292, 340)
+actual orientation: -45.0
+closest point real: (362, 344)
+el punto más cercano de la recta es: (362, 344)
+angulo de la recta: -86.63353933657021
+angulo entre el robot y el punto mas cercano a la recta: 3.270487923183566
+la distancia actual es de: 70.11419257183242
+The good orientation is: -71.85959805467884
+error de orientacion entre actual orientation y good orientation: 26.859598054678827
+robot has to go right
+estado de robot: girando_derecha
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (293, 330)
+actual orientation: -45.0
+closest point real: (363, 335)
+el punto más cercano de la recta es: (363, 335)
+angulo de la recta: -80.53767779197439
+angulo entre el robot y el punto mas cercano a la recta: 4.085616779974885
+la distancia actual es de: 70.178344238091
+The good orientation is: -66.61879647080649
+error de orientacion entre actual orientation y good orientation: 21.6187964708065
+robot has to go right
+estado de robot: girando_derecha
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (291, 317)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (276, 283)
+actual orientation: -113.80594351845772
+closest point real: (368, 297)
+el punto más cercano de la recta es: (368, 297)
+angulo de la recta: -82.5685920288275
+angulo entre el robot y el punto mas cercano a la recta: 8.652541791114714
+la distancia actual es de: 93.05912099305473
+The good orientation is: -62.6725954758424
+error de orientacion entre actual orientation y good orientation: -51.133348042615324
+robot has to go left
+estado de robot: girando_izquierda
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (296, 255)
+actual orientation: -65.77225468204585
+closest point real: (372, 264)
+el punto más cercano de la recta es: (372, 264)
+angulo de la recta: -84.8055710922652
+angulo entre el robot y el punto mas cercano a la recta: 6.753574035530988
+la distancia actual es de: 76.53103945458993
+The good orientation is: -68.38264168241233
+error de orientacion entre actual orientation y good orientation: 2.6103870003664724
+El robot tiene que ir recto
+estado de robot: yendo_recto
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (305, 223)
+no se ha actualizado el frame
+------------------------------
+pathing
+spining: False
+point: (321, 174)
+actual orientation: -71.91655461695132
+closest point real: (360, 167)
+el punto más cercano de la recta es: (360, 167)
+angulo de la recta: -105.94539590092286
+angulo entre el robot y el punto mas cercano a la recta: -10.175510843043213
+la distancia actual es de: 39.6232255123179
+The good orientation is: -97.05154022997647
+error de orientacion entre actual orientation y good orientation: 25.13498561302515
+robot has to go right
+estado de robot: girando_derecha
+esta lejos todavia, rootafter
+------------------------------
+pathing
+spining: False
+point: (320, 161)
+actual orientation: -94.39870535499551
+closest point real: (355, 153)
+el punto más cercano de la recta es: (355, 153)
+angulo de la recta: -108.43494882292202
+angulo entre el robot y el punto mas cercano a la recta: -12.875001559612485
+la distancia actual es de: 35.90264614203248
+The good orientation is: -100.3938824824238
+error de orientacion entre actual orientation y good orientation: 5.995177127428292
+El robot tiene que ir recto
+estado de robot: yendo_recto

@@ -23,6 +23,25 @@ class KeyListener:
         if self.start_time is not None:
             elapsed_time = time.time() - self.start_time
             initial_position = vision.point
+
+            if key == keyboard.KeyCode.from_char('h'):
+                self.show_options()
+
+            if key == keyboard.KeyCode.from_char('1'):
+                vision.set_current_mark("regions")
+            elif key == keyboard.KeyCode.from_char('2'):
+                vision.set_current_mark("path")
+            elif key == keyboard.KeyCode.from_char('3'):
+                vision.set_current_mark("target_point")
+            elif key == keyboard.KeyCode.from_char('4'):
+                vision.gpio.move_to_target()
+            elif key == keyboard.KeyCode.from_char('5'):
+                gpio.calibrate_rotation()
+            elif key == keyboard.KeyCode.from_char('6'):
+                vision.set_current_mark("limits")
+            elif key == keyboard.KeyCode.from_char('7'):
+                gpio.follow_path()
+
             if keyboard.Key.up in self.keys_pressed and keyboard.Key.right in self.keys_pressed:
                 gpio.move("up-right", elapsed_time, "manual")
             elif keyboard.Key.up in self.keys_pressed and keyboard.Key.left in self.keys_pressed:
@@ -66,7 +85,15 @@ class KeyListener:
         if key == keyboard.KeyCode.from_char('q'):
             return False
 
-
+    def show_options(self):
+        print("Opciones disponibles:")
+        print("1 - Marcar regiones")
+        print("2 - Dibujar trayectoria")
+        print("3 - Marcar meta")
+        print("4 - Llegar a meta")
+        print("5 - Calibrar giro")
+        print("6 - Marcar limites")
+        print("7 - Seguir trayectoria")
 
     def start(self):
         self.listener.start()
