@@ -1,7 +1,8 @@
 import os
 import vision
+from KeyListener import KeyListener
 from gpio import right_button, left_button, up_button, down_button
-from queue import Queue
+import cv2
 
 
 
@@ -18,11 +19,12 @@ if __name__ == '__main__':
     
 
     warning = False
-    events_queue = Queue()
+    listener = KeyListener(None)
+    listener.start()
     vision.init_vision()
     # update_point(cap, window_name, listener)
-    while vision.listener.running():
-        vision.root.update()
+    while listener.running():
+        cv2.waitKey(1)
         # vision.mostrar_frame()
         # if vision.current_mark != None:
         #     mostrar_frame(window_name)
