@@ -6,11 +6,13 @@ pattern_point = re.compile(r"point: \((-*\d+), (-*\d+)\)")
 pattern_closest_point = re.compile(r"el punto m.+s cercano de la recta es: *\((\d+), (\d+)\)")
 pattern_robot_state = re.compile(r"estado de robot: (\w+)")
 pattern_good_orientation = re.compile(r"The good orientation is: *(-*\d+\.\d+)")
+patter_actual_orientation = re.compile(r"actual orientation: *(-*\d+\.\d+)")
 
 # Listas para almacenar puntos, puntos más cercanos a la recta y buenas orientaciones
 points = []
 closest_points = []
 good_orientations = []
+actual_orientations = []
 
 # Diccionario para almacenar los puntos con su estado
 robots_states = []
@@ -39,6 +41,10 @@ with open('pathinglog.txt', 'r') as file:
                     if match_state := pattern_robot_state.search(state_line):
                         robots_states.append(match_state.group(1))
             
+            if math_actual := patter_actual_orientation.search(lines[i-6]):
+                actual_orientation = float(math_actual.group(1))
+                actual_orientations.append(actual_orientation)
+            
 # Verificación de la longitud de los arrays
 if len(points) != len(good_orientations):
     print(len(points), len(good_orientations))
@@ -51,7 +57,7 @@ x_coords, y_coords = zip(*points)
 plt.plot(x_coords, y_coords, color='blue', linestyle='-', marker='o', label='Path of Points')
 plt.scatter(*zip(*closest_points), color='red', label='Closest Points to Line')
 for i, point in enumerate(points):
-    plt.text(*point, f"{robots_states[i]}, {good_orientations[i]:.2f}", fontsize=8)
+    plt.text(*point, f"{robots_states[i]}\ng: {good_orientations[i]:.2f}\nr: {actual_orientations[i]:.2f}\n", fontsize=7)
 plt.title('Points, Closest Points to Line, Robot States, and Good Orientations')
 plt.xlabel('X coordinate')
 plt.ylabel('Y coordinate')

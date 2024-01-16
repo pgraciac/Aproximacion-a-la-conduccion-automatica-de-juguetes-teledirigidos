@@ -101,6 +101,7 @@ def follow_path():
     GIRANDO_DERECHA = 'girando_derecha'
     GIRANDO_IZQUIERDA = 'girando_izquierda'
     YENDO_RECTO = 'yendo_recto'
+    PARADO = 'parado'
     f = open("pathinglog.txt", "w")
     f.truncate(0)
 
@@ -130,24 +131,20 @@ def follow_path():
             left_button.value = True
         spining = False
 
-
-    def pathing(last_point, estado_robot, last_orientation, n_errores = 0):
+    def pathing(last_point, last_orientation, n_errores = 0):
         nonlocal f
-        global angulo_closest_point, closest_point, spining
+        global angulo_closest_point, closest_point, estado_robot#,spining
         vision.mostrar_frame("up")
         print("pathing")
         f.write("pathing\n")
         print(f"spining: {spining}")
         f.write(f"spining: {spining}\n")
-        print(f"estado de robot: {estado_robot}")
-        f.write(f"estado de robot: {estado_robot}\n")
-        print(f"up button = {up_button.value}\nright button = {right_button.value}\nleft button = {left_button.value}")
-        f.write(f"up button = {up_button.value}\nright button = {right_button.value}\nleft button = {left_button.value}\n")
+        #f.write(f"estado de robot: {estado_robot}\n")
         print(f"point: {vision.point}")
         f.write(f"point: {vision.point}\n")
         # if spining == True:
         #     vision.add_orientation()
-        if vision.point != last_point and spining == False: ##ver si cambia dos al menos
+        if vision.point != last_point: ##ver si cambia dos al menos
             
             ##SI ES HACIA LA DERECHA VER SI TIENE SENTIDO LA ORIENTACION NUEVA Y TAMBIEN VER SI CAMBIA DEMASIADO LA ORIENTACION QUE NO PUEDE SER
             # actual_orientation = vision.orientation_two_points(last_point, vision.point)
@@ -161,7 +158,7 @@ def follow_path():
             #         have_error = True
             #         n_errores +=1
             #         print(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END)
-            #         f.write(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END + "\n")
+            #         #f.write(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END + "\n")
             #         # print("\n------------------------------\n")
             #         # return vision.root.after(1, lambda: pathing(vision.point , estado_robot, actual_orientation))
             #         actual_orientation = last_orientation - 35
@@ -173,7 +170,7 @@ def follow_path():
             #         have_error = True
             #         n_errores +=1
             #         print(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END)
-            #         f.write(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END + "\n")
+            #         #f.write(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END + "\n")
             #         # print("\n------------------------------\n")
             #         # return vision.root.after(1, lambda: pathing(vision.point , estado_robot, actual_orientation))
             #         actual_orientation = last_orientation + 35
@@ -191,11 +188,11 @@ def follow_path():
                 closest_point = vision.path[-2]
             closest_point_index = vision.path.index(closest_point)
             long_path = len(vision.path)
-            f.write(f"len path: {long_path}")
+            #f.write(f"len path: {long_path}")
             print(f"closest point real: {closest_point}")
-            f.write((f"closest point real: {closest_point}"))
+            f.write((f"closest point real: {closest_point}\n"))
             # if closest_point_index + 11 < long_path:
-            #     f.write(f"closest_point_index + 10: {closest_point_index}, {closest_point_index + 10}")
+            #     #f.write(f"closest_point_index + 10: {closest_point_index}, {closest_point_index + 10}")
             #     closest_point_index += 10
             #     closest_point = vision.path[closest_point_index]
             point_before_index = closest_point_index -1
@@ -224,36 +221,18 @@ def follow_path():
             #     estimate_point = (round(vision.point[0] + 40 * math.cos(actual_orientation_rad)), round(vision.point[1] + 40 * math.sin(actual_orientation_rad)))
             #     estimate_distance = distance_two_points(closest_point, estimate_point)
             #     estimate_orientation_robot_path = vision.orientation_two_points(estimate_point, closest_point)
-            if actual_distance > 80: 
-                up_button.value = True
-                right_button.value = True
-                left_button.value = True
-                print(RED + "Se sale de la linea" + END)
-                f.write(RED + "Se sale de la linea" + END)
-                time.sleep(1)
-                vision.mostrar_frame("up")
-                # print("mostrar frame")
-                # f.write("mostrar frame")
-                closest_point = get_closest_path_point()
-                vision.target_point = closest_point
-                # actual_orientation = vision.orientation_two_points(last_point, vision.point)
-                # vision.mostrar_frame()
-                # vision.root.update()
-                # print("root update\n-----------------------------------\n")
-                # f.write("root update\n-----------------------------------\n")
-                time.sleep(1)
-                move_to_target(lambda: on_target_reached(closest_point), 25)
-                return
-            elif actual_distance < 80:
+            if actual_distance > vision.frame.shape[0] / 3:
+                good_orientation = orientation_robot_path
+            elif actual_distance < 1:
                 good_orientation = angulo_closest_point
             else:
                 factor = 1- (actual_distance / (vision.frame.shape[1] / 3))
                 print("the factor is: ",factor)
-                f.write(f"the factor is: {factor}\n")
+                # f.write(f'the factor is: {factor}\n')
                 next_point_path = vision.path[closest_point_index + 1]
                 orientation_robot_next_point_path = vision.orientation_two_points(vision.point, next_point_path)
                 print(f"orientacion al siguiente punto de la recta: {orientation_robot_next_point_path}")
-                f.write(f"orientacion al siguiente punto de la recta: {orientation_robot_next_point_path}\n")
+                # f.write(f"orientacion al siguiente punto de la recta: {orientation_robot_next_point_path}\n")
                 orientation_robot_path = orientation_robot_path + 360 if orientation_robot_path < 0 else orientation_robot_path
                 angulo_closest_point = angulo_closest_point + 360 if angulo_closest_point < 0 else angulo_closest_point
                 error_angle = angulo_closest_point - orientation_robot_path
@@ -264,7 +243,8 @@ def follow_path():
                 good_orientation = (good_orientation + 180) % 360 - 180
 
             print("The good orientation is: ",good_orientation)
-            f.write(f"The good orientation is: {good_orientation}\n")
+            f.write(f'The good orientation is: {good_orientation}\n')
+
             # if estado_robot == GIRANDO_DERECHA:
             #     estimacion_orientacion = actual_orientation - 40
             # elif estado_robot == GIRANDO_IZQUIERDA:
@@ -276,10 +256,10 @@ def follow_path():
             #     estimacion_orientacion = estimate_orientation_robot_path
             # else:
             #     estimacion_orientacion = actual_orientation
-            estimacion_orientacion = vision.actual_orientation
-            print("estimacion orientacion: ", estimacion_orientacion)
-            f.write(f"estimacion orientacion: {estimacion_orientacion}\n")
-            error_orientation = estimacion_orientacion - good_orientation
+            # estimacion_orientacion = actual_orientation
+            # print("estimacion orientacion: ", estimacion_orientacion)
+            # f.write(f"estimacion orientacion: {estimacion_orientacion}\n")
+            error_orientation = vision.actual_orientation - good_orientation
             error_orientation = (error_orientation + 180) % 360 - 180
             print(f"error de orientacion entre actual orientation y good orientation: {error_orientation}")
             f.write(f"error de orientacion entre actual orientation y good orientation: {error_orientation}\n")
@@ -289,38 +269,37 @@ def follow_path():
             # if error_orientation < 20:
             #     rotating("left", rotate_duration)
             #     print(f"robot has to go left {rotate_duration} sec")
-            #     f.write(f"robot has to go left {rotate_duration} sec")
+            #     #f.write(f"robot has to go left {rotate_duration} sec")
             #     hilo = threading.Thread(target=rotating, args=("left", rotate_duration))
             #     hilo.start()
             # elif error_orientation > 20:
             #     rotating("right", rotate_duration)
             #     print(f"robot has to go right {rotate_duration} sec")
-            #     f.write(f"robot has to go right {rotate_duration} sec")
+            #     #f.write(f"robot has to go right {rotate_duration} sec")
             #     hilo = threading.Thread(target=rotating, args=("right", rotate_duration))
             #     hilo.start()
             # else:
             #     print("sigue recto")
-            #     f.write("sigue recto\n")
+            #     #f.write("sigue recto\n")
+            # print(estado_robot)
             if estado_robot == YENDO_RECTO:
-                print("yendo recto")
-                f.write("yendo recto\n")
                 if abs(error_orientation) < 20:
                     print("seguir recto")
                     f.write("seguir recto\n")
+                    left_button.value = True
+                    right_button.value = True
                 elif error_orientation < 0:
                     print("robot has to go left")
                     f.write("robot has to go left\n")
                     estado_robot = GIRANDO_IZQUIERDA
-                    right_button.value = True
                     left_button.value = False
-                    up_button.value = False
+                    right_button.value = True
                 elif error_orientation > 0:
                     print("robot has to go right")
                     f.write("robot has to go right\n")
                     estado_robot = GIRANDO_DERECHA
-                    right_button.value = False
-                    up_button.value = False
                     left_button.value = True
+                    right_button.value = False
             else:
                 if abs(error_orientation) < 20:
                     print("El robot tiene que ir recto")
@@ -328,50 +307,48 @@ def follow_path():
                     estado_robot = YENDO_RECTO
                     left_button.value = True
                     right_button.value = True
-                    up_button.value = False
                 elif error_orientation < 0:
                     print("robot has to go left")
                     f.write("robot has to go left\n")
                     estado_robot = GIRANDO_IZQUIERDA
                     left_button.value = False
-                    up_button.value = False
                     right_button.value = True
                 elif error_orientation > 0:
                     print("robot has to go right")
                     f.write("robot has to go right\n")
                     estado_robot = GIRANDO_DERECHA
-                    right_button.value = False
                     left_button.value = True
-                    up_button.value = False
+                    right_button.value = False
+            print(f"estado de robot: {estado_robot}")
+            f.write(f"estado de robot: {estado_robot}\n")
 
             # Verificar si el robot ha alcanzado el final de la trayectoria
-            if distance_two_points(vision.point, vision.path[-1]) < 50 or closest_point == vision.path[-2]:  # Suponiendo que 20 es un umbral para estar "suficientemente cerca" del final
-                up_button.value = True
-                right_button.value = True
-                left_button.value = True
+            if distance_two_points(vision.point, vision.path[-1]) < 20 or closest_point == vision.path[-2]:  # Suponiendo que 20 es un umbral para estar "suficientemente cerca" del final
+                estado_robot = PARADO
                 robot_pathing = False
                 f.close()
-                time.sleep(1)
-                vision.mostrar_frame("up")
             else:
                 # if have_error:
                 #     print("Ha habido error")
-                #     f.write("Ha habido error")
+                #     #f.write("Ha habido error")
                 #     actual_orientation = last_orientation
                 # else:
                 #     n_errores = 0
                 print("esta lejos todavia, rootafter\n------------------------------\n")
                 f.write("esta lejos todavia, rootafter\n------------------------------\n")
+                # vision.root.after(50, lambda: pathing(vision.point, actual_orientation, f, n_errores))
                 time.sleep(0.05)
-                pathing(vision.point,estado_robot, vision.actual_orientation, n_errores)
+                pathing(vision.point, vision.actual_orientation, n_errores)
         else:
             print("no se ha actualizado el frame\n------------------------------\n")
             f.write("no se ha actualizado el frame\n------------------------------\n")
+            # vision.root.after(100, lambda: pathing(last_point, actual_orientation, f))
             time.sleep(0.1)
-            pathing(last_point, estado_robot, vision.actual_orientation)
+            pathing(last_point, vision.actual_orientation)
+
 
     def begin_path():
-        global up_button, right_button, left_button, robot_pathing
+        global up_button, right_button, left_button, robot_pathing, estado_robot
         print(BLUE + "Empezando ruta" + END)
         # up_button.value = False
         # estado_robot = YENDO_RECTO
@@ -391,7 +368,7 @@ def follow_path():
             right_button.value = False
             estado_robot = GIRANDO_DERECHA
         time.sleep(0.5)
-        pathing(vision.point, estado_robot, vision.actual_orientation, f)
+        pathing(vision.point, estado_robot, vision.actual_orientation)
         
 
     def on_target_reached(first_point = None):
@@ -452,8 +429,8 @@ def follow_path():
             print("\n------------------------------\n")
         print("preparado para seguirla")
         begin_path()
-    f = open("pathinglog.txt", "w")
-    f.truncate(0)
+    # f = open("pathinglog.txt", "w")
+    # f.truncate(0)
     move_to_target(on_target_reached,threshold=25)
     time.sleep(1)
     vision.mostrar_frame()
