@@ -8,12 +8,6 @@ import cv2
 
 
 
-# def update_point(cap, window_name, listener):
-#     global frame
-#     if listener.running():
-#         frame = vision.captqurar_imagen(cap)
-#         vision.mostrar_frame(window_name)
-#         threading.Timer(0.4, update_point, args=(cap, window_name, listener)).start()
 
 
 if __name__ == '__main__':

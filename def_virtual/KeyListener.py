@@ -28,6 +28,10 @@ class KeyListener:
             print("5 - Calibrar giro")
             print("6 - Marcar limites")
             print("7 - Seguir trayectoria")
+            print("8 - Experimento en linea recta")
+            print("9 - Calibrar distancia")
+            print("p - PWM_test")
+            print("q - STOP")
 
         if key == keyboard.KeyCode.from_char('1'):
             vision.set_current_mark("regions")
@@ -36,14 +40,32 @@ class KeyListener:
         elif key == keyboard.KeyCode.from_char('3'):
             vision.set_current_mark("target_point")
         elif key == keyboard.KeyCode.from_char('4'):
+            print("mueve al target")
+            tiempo_inicio=time.time()
             gpio_virtual.move_to_target()
+            tiempo_final = time.time() - tiempo_inicio
+            print(tiempo_final)
         elif key == keyboard.KeyCode.from_char('5'):
             gpio_virtual.calibrate_rotation()
         elif key == keyboard.KeyCode.from_char('6'):
             vision.set_current_mark("limits")
         elif key == keyboard.KeyCode.from_char('7'):
+            tiempo_inicio=time.time()
             gpio_virtual.follow_path()
+            tiempo_final = time.time() - tiempo_inicio
+            print(tiempo_final)
+        elif key == keyboard.KeyCode.from_char('8'):
+            gpio_virtual.mov_recta()
+        elif key == keyboard.KeyCode.from_char('9'):
+            gpio_virtual.calibrate_distance()
+        elif key == keyboard.KeyCode.from_char('p'):
+            gpio_virtual.pwm_test()
+        elif key == keyboard.KeyCode.from_char('q'):
+            self.listener.stop()
+            vision.finish_vision()
 
+        if key in self.keys_pressed and key not in [keyboard.Key.left, keyboard.Key.up, keyboard.Key.right, keyboard.Key.down]:
+            self.keys_pressed.remove(key)
     def on_release(self, key):
         if self.start_time is not None:
             elapsed_time = time.time() - self.start_time

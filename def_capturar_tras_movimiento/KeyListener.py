@@ -28,6 +28,10 @@ class KeyListener:
             print("5 - Calibrar giro")
             print("6 - Marcar limites")
             print("7 - Seguir trayectoria")
+            print("8 - Experimento en linea recta")
+            print("9 - Calibrar distancia")
+            print("p - PWM_test")
+            print("q - STOP")
 
         if key == keyboard.KeyCode.from_char('1'):
             vision.set_current_mark("regions")
@@ -37,13 +41,31 @@ class KeyListener:
             vision.set_current_mark("target_point")
         elif key == keyboard.KeyCode.from_char('4'):
             print("mueve al target")
+            tiempo_inicio=time.time()
             gpio.move_to_target()
+            tiempo_final = time.time() - tiempo_inicio
+            print(tiempo_final)
         elif key == keyboard.KeyCode.from_char('5'):
             gpio.calibrate_rotation()
         elif key == keyboard.KeyCode.from_char('6'):
             vision.set_current_mark("limits")
         elif key == keyboard.KeyCode.from_char('7'):
+            tiempo_inicio=time.time()
             gpio.follow_path()
+            tiempo_final = time.time() - tiempo_inicio
+            print(tiempo_final)
+        elif key == keyboard.KeyCode.from_char('8'):
+            gpio.mov_recta()
+        elif key == keyboard.KeyCode.from_char('9'):
+            gpio.calibrate_distance()
+        elif key == keyboard.KeyCode.from_char('p'):
+            gpio.pwm_test()
+        elif key == keyboard.KeyCode.from_char('q'):
+            self.listener.stop()
+            vision.finish_vision()
+
+        if key in self.keys_pressed and key not in [keyboard.Key.left, keyboard.Key.up, keyboard.Key.right, keyboard.Key.down]:
+            self.keys_pressed.remove(key)
 
     def on_release(self, key):
         if self.start_time is not None:
@@ -67,19 +89,6 @@ class KeyListener:
                     gpio.move("right", elapsed_time, "manual")
                 elif key == keyboard.Key.down:
                     gpio.move("down", elapsed_time, "manual")        
-            # if key == keyboard.Key.up:
-            #     delta_x_robot = final_position[0] - initial_position[0]
-            #     delta_y_robot = final_position[1] - initial_position[1]
-            #     robot_orientation = math.atan2(delta_x_robot, delta_y_robot)
-            #     robot_orientation = math.degrees(math.atan2(delta_y_robot, delta_x_robot))
-            #     gpio.actual_orientation = (robot_orientation % 360) - 360 if robot_orientation % 360 > 180 else robot_orientation % 360
-            # elif key == keyboard.Key.down:
-            #     delta_x_robot = initial_position[0] - final_position[0]
-            #     delta_y_robot = initial_position[1] - final_position[1]
-            #     robot_orientation = math.degrees(math.atan2(delta_y_robot, delta_x_robot))
-            #     gpio.actual_orientation = (robot_orientation % 360) - 360 if robot_orientation % 360 > 180 else robot_orientation % 360
-            #     print("actual orientation after down: ", gpio.actual_orientation)
-            # vision.root.update()
             self.start_time = None
         
         if key in self.keys_pressed:
@@ -87,16 +96,6 @@ class KeyListener:
         
         if key == keyboard.KeyCode.from_char('q'):
             return False
-
-    def show_options(self):
-        print("Opciones disponibles:")
-        print("1 - Marcar regiones")
-        print("2 - Dibujar trayectoria")
-        print("3 - Marcar meta")
-        print("4 - Llegar a meta")
-        print("5 - Calibrar giro")
-        print("6 - Marcar limites")
-        print("7 - Seguir trayectoria")
 
     def start(self):
         self.listener.start()

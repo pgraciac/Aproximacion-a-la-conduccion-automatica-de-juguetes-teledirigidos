@@ -1,0 +1,68 @@
+portada
+
+poner mas	palabras clave en linea
+
+mas conclusiones 	resumen resumir en el tfg 
+
+	motivacion desmostrar no, utilidad (porque quiero hacer este trabajo)
+
+	objetivo plataforma autonomica con cierta autonomia que es capaz de 	cumplir ciertas tareas
+
+-Drones: Este sistema también podría ser usado para tareas que tengan que realizar drones Control de drones que vuelan en un plano.
+
+estudio de alternativas 4 paginas
+-procesamiento de imagenes
+-Teleoperación
+-Sigue lineas
+
+	explicar el gráfico de diseño
+	3.1 diseño de la comunicación como un resumen de todo
+	3.1.1 resumen de las características de la camara
+3.1.2 especificaciones del adafruit
+
+	referencias numerito entre corchetes ya al final del todo la cita
+	formato autor nombre del trabajo lo que sea donde se ha publicado 
+
+	viendo el circuito.... explicar mejor
+	librerias de python
+	mencionar figuras en el texto y hablar en función de ellas
+
+	3.2 Diseño de movilidad mejor planificaciçon de trayectorias
+	detallada en apartado tal entre parentesis
+	diagrama de clases en el diseño
+
+explicar cosas la tabla de las imprecisiones
+EXPLICAR TODO COMO SI FUERAN TONTOS
+
+4.5 SIMULAR como el robot real
+
+abuso de simplemente
+quitar figura 19 y 20
+explicar movimiento recta
+
+explicar mejor tablas de angulos, verde y rojo.
+
+explicar con un redondel cuando gira la instrucción.
+
+intentos de solución para la latencia como sub apartado
+4.9 muy largo mas estructura
+
+explicar más tabla de medias por ejmpelo porque hasta 9
+interpretación de la tabla
+
+explicar más porque del punto 4.9.2 y dentro de el también 
+usar rumbo que se mantiene
+
+explicar tablas y datos recogidos, acabar con conclusión y medias
+explicar porque estos experimentos
+
+REGIONES
+
+
+
+
+PREGUNTARR
+diagrama de clases en diseño
+hacer un apartado de diseño de vision
+poner las funciones utilizadas de las librerias
+explicar callbacks para las marcas en la imagen

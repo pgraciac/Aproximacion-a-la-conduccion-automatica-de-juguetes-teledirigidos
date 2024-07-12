@@ -1,1 +1,1 @@
-line
+plt.legend()

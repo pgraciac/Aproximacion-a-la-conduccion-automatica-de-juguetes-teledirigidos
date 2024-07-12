@@ -266,7 +266,7 @@ def update_frame(mov):
     if point_in_rois():
         cv2.putText(frame, "WARNING: POINT IS IN A INVALID PLACE", (140, 30), cv2.FONT_HERSHEY_TRIPLEX, 1, (0, 0, 255), 1)
 
-    if hasattr(gpio_virtual, 'angulo_closest_point') and hasattr(gpio_virtual, 'closest_point') and gpio_virtual.robot_pathing == True:
+    if gpio_virtual.angulo_closest_point != None and gpio_virtual.closest_point != None:
         closest_point_trans = transform_point(gpio_virtual.closest_point)
         angle = gpio_virtual.angulo_closest_point
 
@@ -277,20 +277,6 @@ def update_frame(mov):
         # Dibujar el ángulo con una línea
         end_point_angle = (int(closest_point_trans[0] + 50 * math.cos(angle * np.pi / 180.0)), int(closest_point_trans[1] - 50 * math.sin(angle * np.pi / 180.0)))
         cv2.arrowedLine(frame, closest_point_trans, end_point_angle, (50, 100, 0), 2, tipLength=0.5)
-
-    # if hasattr(gpio_virtual, 'actual_orientation') and point is not None:
-    #     cv2.circle(frame, transform_point(point), 5, (0, 0, 255), -1)
-    #     cv2.putText(frame, f"{point}", (transform_point(point)[0] - 50, transform_point(point)[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-        
-    #     if case != "not_orientation":
-    #         angle = gpio_virtual.actual_orientation
-    #         orientation_text = f"{gpio_virtual.actual_orientation:.2f}"
-    #         cv2.putText(frame, orientation_text, (transform_point(point)[0] + 10, transform_point(point)[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-
-    #         # Dibujar el ángulo con una línea
-    #         end_point_angle = (int(transform_point(point)[0] + 50 * math.cos(angle * np.pi / 180.0)), int(transform_point(point)[1] - 50 * math.sin(angle * np.pi / 180.0)))
-    #         cv2.arrowedLine(frame, transform_point(point), end_point_angle, (50, 100, 0), 2, tipLength=0.5)
-    #         cv2.putText(frame, f"Angle: {angle:.2f}", (transform_point(point)[0] + 60, transform_point(point)[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         
     if point is not None:
         cv2.circle(frame, transform_point(point), 5, (0, 0, 255), -1)
@@ -352,27 +338,6 @@ def init_vision():
     cv2.namedWindow(window_name)
     cap = cv2.VideoCapture(1)
 
-    # root.title("Menú")
-    # listener.start()
-    
-
-    # btn_marcar_regiones = tk.Button(root, text="Marcar regiones", command=lambda: set_current_mark("regions"))
-    # btn_dibujar_trayectoria = tk.Button(root, text="Dibujar trayectoria", command=lambda: set_current_mark("path"))
-    # btn_marcar_meta = tk.Button(root, text="Marcar meta", command=lambda: set_current_mark("target_point"))
-    # btn_llegar_meta = tk.Button(root, text="Llegar a meta", command=lambda: gpio_virtual.move_to_target())
-    # # btn_marcar_robot = tk.Button(root, text="Marcar robot", command=lambda: set_color_range(frame))
-    # btn_calibrate_spin = tk.Button(root, text="Calibrar giro", command=lambda: gpio_virtual.calibrate_rotation())
-    # btn_marcar_limites = tk.Button(root, text="Marcar limites", command=lambda: set_current_mark("limits"))
-    # btn_seguir_trayectoria = tk.Button(root, text="Seguir trayectoria", command=lambda: gpio_virtual.follow_path())
-
-    # btn_marcar_regiones.pack(fill=tk.BOTH, expand=True)
-    # btn_dibujar_trayectoria.pack(fill=tk.BOTH, expand=True)
-    # btn_marcar_meta.pack(fill=tk.BOTH, expand=True)
-    # btn_llegar_meta.pack(fill=tk.BOTH, expand=True)
-    # btn_calibrate_spin.pack(fill=tk.BOTH, expand=True)
-    # # btn_marcar_robot.pack(fill=tk.BOTH, expand=True)
-    # btn_marcar_limites.pack(fill=tk.BOTH, expand=True)
-    # btn_seguir_trayectoria.pack(fill=tk.BOTH, expand=True)
     cap.read()
     mostrar_frame()
     print(f"height 0: {frame.shape[0]}, height 1 {frame.shape[1]}")
@@ -398,8 +363,6 @@ def orientation_two_points(initial_point, final_point):
     angle_to_target = math.atan2(delta_y_point, delta_x_point)
     angle_to_target = math.degrees(angle_to_target)
     #print(f"angle to target: {angle_to_target}")
-    # Calculate the angular error
-    # Normalize the error_angle to be between -pi and pi
     angle_to_target = (angle_to_target + 180) % 360 - 180
     # print("angulo entre", initial_point, final_point, "= ", angle_to_target)
     return angle_to_target
