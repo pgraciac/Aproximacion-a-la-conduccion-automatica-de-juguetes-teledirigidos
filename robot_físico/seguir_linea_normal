@@ -13,39 +13,6 @@
         #     vision.add_orientation()
         if vision.point != last_point: ##ver si cambia dos al menos
             
-            ##SI ES HACIA LA DERECHA VER SI TIENE SENTIDO LA ORIENTACION NUEVA Y TAMBIEN VER SI CAMBIA DEMASIADO LA ORIENTACION QUE NO PUEDE SER
-            # actual_orientation = vision.orientation_two_points(last_point, vision.point)
-            # real_orientation = actual_orientation
-            # have_error = False
-            # if estado_robot == GIRANDO_DERECHA:
-            #     actual_orientation = actual_orientation +360 if actual_orientation < 0 else actual_orientation
-            #     last_orientation = last_orientation +360 if last_orientation < 0 else last_orientation
-            #     error = (actual_orientation - last_orientation + 180) % 360 - 180
-            #     if error > 20:
-            #         have_error = True
-            #         n_errores +=1
-            #         print(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END)
-            #         #f.write(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END + "\n")
-            #         # print("\n------------------------------\n")
-            #         # return vision.root.after(1, lambda: pathing(vision.point , estado_robot, actual_orientation))
-            #         actual_orientation = last_orientation - 35
-            # elif estado_robot == GIRANDO_IZQUIERDA:
-            #     actual_orientation = actual_orientation +360 if actual_orientation < 0 else actual_orientation
-            #     last_orientation = last_orientation +360 if last_orientation < 0 else last_orientation
-            #     error = (actual_orientation - last_orientation + 180) % 360 - 180
-            #     if error < -20:
-            #         have_error = True
-            #         n_errores +=1
-            #         print(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END)
-            #         #f.write(RED + "Error de orientacion" + f" detecta {(actual_orientation +180) % 360 -180}" + END + "\n")
-            #         # print("\n------------------------------\n")
-            #         # return vision.root.after(1, lambda: pathing(vision.point , estado_robot, actual_orientation))
-            #         actual_orientation = last_orientation + 35
-
-            # actual_orientation = (actual_orientation + 180) % 360 - 180
-            # if n_errores > 2:
-            #     actual_orientation = real_orientation
-            # vision.add_orientation()
             print(f"actual orientation: {vision.actual_orientation}")
             f.write(f"actual orientation: {vision.actual_orientation}\n")
             closest_point = get_closest_path_point(vision.point)
@@ -117,31 +84,10 @@
             error_orientation = (error_orientation + 180) % 360 - 180
             print(f"error de orientacion entre actual orientation y good orientation: {error_orientation}")
             f.write(f"error de orientacion entre actual orientation y good orientation: {error_orientation}\n")
-            # rotate_duration = 0.1 * abs(error_orientation) / (spin_right_second - 20)
-            # if rotate_duration < 0.05:
-            #     rotate_duration = 0.05
-            # if error_orientation < 20:
-            #     rotating("left", rotate_duration)
-            #     print(f"robot has to go left {rotate_duration} sec")
-            #     #f.write(f"robot has to go left {rotate_duration} sec")
-            #     hilo = threading.Thread(target=rotating, args=("left", rotate_duration))
-            #     hilo.start()
-            # elif error_orientation > 20:
-            #     rotating("right", rotate_duration)
-            #     print(f"robot has to go right {rotate_duration} sec")
-            #     #f.write(f"robot has to go right {rotate_duration} sec")
-            #     hilo = threading.Thread(target=rotating, args=("right", rotate_duration))
-            #     hilo.start()
-            # else:
-            #     print("sigue recto")
-            #     #f.write("sigue recto\n")
-            # print(estado_robot)
+
             angulo_obj = abs(vision.actual_orientation - (angulo_closest_point + orientation_robot_path))
             print(f"angulo objetivo: {angulo_obj}")
-            # if angulo_obj < 90 or (angulo_obj > 270 and angulo_obj < 360):
-            #     umbral = 60
-            # else:
-            #     umbral = 20
+
             umbral = 20
             if estado_robot == YENDO_RECTO:
                 if abs(error_orientation) < umbral:
@@ -325,7 +271,6 @@
                 move_duration = 0.05
             print("orientando a la recta")
             if error_angle > 0:
-                # Turn left if the target is to the left
                 rotate_duration = abs(error_angle) / (spin_right_second - 20) * 0.1
                 print("have to move left")
                 move("left", rotate_duration)
@@ -334,7 +279,6 @@
                 move(up_down, move_duration)
             elif error_angle < 0:
                 rotate_duration = abs(error_angle) / spin_right_second * 0.1
-                # Turn left if the target is to the left
                 print("have to move rigth")
                 move("right", rotate_duration)
                 #vision.mostrar_frame()
@@ -451,29 +395,8 @@ def move_to_target(callback=None, threshold=50, kp=0.1, kd=0.1, file=None, cont 
             #vision.mostrar_frame()
             #vision.root.update()
             move("up", 0.2)
-    # elif error_angle > 120:
-    #     rotate_duration = abs(error_angle) / spin_right_second * 0.1
-    #     # Turn left if the target is to the left
-    #     print("have to move left")
-    #     rotate_duration = abs(error_angle) / spin_right_second * 0.1
-    #     move("left", 0.1)
-    #     #vision.mostrar_frame()
-    #     #vision.root.update()
-    #     move("up", 0.2)
-    # elif error_angle < -120:
-    #     # Turn left if the target is to the left
-    #     print("have to move right")
-    #     move("right", 0.1)
-    #     #vision.mostrar_frame()
-    #     #vision.root.update()
-    #     move("up", 0.2)
 
-    #vision.mostrar_frame()
-    #vision.root.update()
-    # Calculate the robot's orientation
-    #time.sleep(4)
 
     print("------------------------------------------------")
-    # Call this function again to keep moving
     time.sleep(0.1)
     move_to_target(callback, threshold, file =file,cont=cont+1,tiempo=tiempo)
